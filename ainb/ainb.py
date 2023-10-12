@@ -428,7 +428,7 @@ class AINB:
                 entry["Flags"].append("Pulse Thread Local Storage")
             if flags & 0x01:
                 entry["Flags"].append("Set Pointer Flag Bit Zero")
-            entry["Flags"].append(hex(flags))
+            entry["Flags"].append(flags)
         if type == "string":
             entry["Value"] = self.string_pool.read_string(self.stream.read_u32())
         if type == "int":
@@ -452,7 +452,8 @@ class AINB:
         entry = {}
         entry["Name"] = self.string_pool.read_string(self.stream.read_u32())
         entry["Offset"] = self.stream.read_u32()
-        self.stream.skip(4)
+        entry["EXB Field Count"] = self.stream.read_u16()
+        entry["EXB Value Size"] = self.stream.read_u16()
         entry["Name Hash"] = hex(self.stream.read_u32())
         return entry
     
@@ -497,7 +498,7 @@ class AINB:
                 entry["Flags"].append("Pulse Thread Local Storage")
             if flags & 0x01:
                 entry["Flags"].append("Set Pointer Flag Bit Zero")
-            entry["Flags"].append(hex(flags))
+            entry["Flags"].append(flags)
         if type == "string":
             entry["Value"] = self.string_pool.read_string(self.stream.read_u32())
         if type == "int":
@@ -509,7 +510,7 @@ class AINB:
         if type == "vec3f":
             entry["Value"] = (self.stream.read_f32(), self.stream.read_f32(), self.stream.read_f32())
         if type == "userdefined":
-            self.stream.skip(4)
+            entry["Value"] = self.stream.read_u32()
         if "Flags" in entry:
             if "0xc200" in entry["Flags"]:
                 entry["Function"] = self.exb.commands[entry["Global/EXB Index"]]
@@ -542,7 +543,7 @@ class AINB:
                 entry["Flags"].append("Pulse Thread Local Storage")
             if flags & 0x01:
                 entry["Flags"].append("Set Pointer Flag Bit Zero")
-            entry["Flags"].append(hex(flags))
+            entry["Flags"].append(flags)
             if "0xc200" in entry["Flags"]:
                 entry["Function"] = self.exb.commands[entry["Global/EXB Index"]]
                 entry["Flags"].remove("0xc200")
@@ -751,14 +752,16 @@ class AINB:
         buffer.write(u32(self.attachment_count))
         buffer.write(u32(self.output_count))
         buffer.write(u32(116 + 24 * self.command_count + 60 * self.node_count))
-        buffer.skip(44) # Skip writing offsets until they're known
-        buffer.skip(8)
+        for i in range(11):
+            buffer.write(u32(4)) # Skip writing offsets until they're known
+        buffer.write(u64(0)) # Skip 8
         buffer.write(u32(0)) # Used in S3/NSS so will have to change if support for those is added
-        buffer.skip(4) # Skip writing offset until it's known
+        buffer.write(u32(0)) # Skip writing offset until it's known
         buffer.add_string(self.file_category)
         buffer.write(u32(buffer._string_refs[self.file_category]))
         buffer.write(u32(file_category[self.file_category]))
-        buffer.skip(12) # SKip writing offsets until they're known
+        buffer.write(u64(0)) # SKip writing offsets until they're known
+        buffer.write(u32(0))
 
         # Commands
         if self.commands:
@@ -782,10 +785,18 @@ class AINB:
         immediate_parameters = dict(zip(type_standard, [[], [], [], [], [], []]))
         input_parameters = dict(zip(type_standard, [[], [], [], [], [], []]))
         output_parameters = dict(zip(type_standard, [[], [], [], [], [], []]))            
+        attachments = []
+        attachment_indices = []
 
         # Nodes
         if self.nodes:
             for node in self.nodes:
+                if "Attachments" in node:
+                    for attachment in node["Attachments"]:
+                        if attachment not in attachments:
+                            attachments.append(attachment)
+                    for attachment in node["Attachments"]:
+                        attachment_indices.append(attachments.index(attachment))
                 buffer.write(u16(Node_Type[node["Node Type"]].value))
                 buffer.write(u16(node["Node Index"]))
                 buffer.write(u16(node["Attachment Count"]))
@@ -801,8 +812,9 @@ class AINB:
                 buffer.add_string(node["Name"])
                 buffer.write(u32(buffer._string_refs[node["Name"]]))
                 buffer.write(u32(int(node["Name Hash"][2:], 16)))
-                buffer.skip(4)
-                buffer.write(u32(node["Parameters Offset"]))
+                buffer.write(u32(0))
+                #buffer.write(u32(node["Parameters Offset"]))
+                buffer.write(u32(0)) # Write offset later
                 buffer.write(u16(node["EXB Field Count"]))
                 buffer.write(u16(node["EXB Value Size"]))
                 buffer.write(u16(node["Multi-Param Count"]))
@@ -826,18 +838,21 @@ class AINB:
         # Global Parameters
         if self.global_params:
             index = 0
+            pos = 0
             for type in type_global:
                 if type in self.global_params:
                     buffer.write(u16(len(self.global_params[type])))
                 else:
                     buffer.write(u16(0))
                 buffer.write(u16(index))
-                if type == "vec3f" and "vec3f" in self.global_params:
-                    buffer.write(u16(index * 4 + len(self.global_params[type] * 8)))
-                else:
-                    buffer.write(u16(index * 4))
                 if type in self.global_params:
                     index += len(self.global_parameters[type])
+                if type == "vec3f" and "vec3f" in self.global_params:
+                    buffer.write(u16(pos))
+                    pos = pos + index * 12
+                else:
+                    buffer.write(u16(pos))
+                    pos = pos + index * 4
                 buffer.write(u16(0))
             files = []
             for type in self.global_params:
@@ -865,7 +880,7 @@ class AINB:
                     if type == "bool":
                         buffer.write(u8(int(entry["Default Value"])))
                         size += 4
-                    if type == "vector3f":
+                    if type == "vec3f":
                         buffer.write(f32(entry["Default Value"][0]))
                         buffer.write(f32(entry["Default Value"][1]))
                         buffer.write(f32(entry["Default Value"][2]))
@@ -886,11 +901,12 @@ class AINB:
 
         immediate_current = dict(zip(type_standard, [0, 0, 0, 0, 0, 0]))
         input_current = dict(zip(type_standard, [0, 0, 0, 0, 0, 0]))
-        output_current = dict(zip(type_standard, [0, 0, 0, 0, 0, 0]))        
+        output_current = dict(zip(type_standard, [0, 0, 0, 0, 0, 0]))      
 
+        bodies = []
         if self.nodes:
             for node in self.nodes:
-                buffer.seek(node["Parameters Offset"])
+                bodies.append(buffer.tell())
                 if "Immediate Parameters" in node:
                     for type in type_standard:
                         if type in node["Immediate Parameters"]:
@@ -901,11 +917,11 @@ class AINB:
                             immediate_current[type] = len(immediate_parameters[type])
                         else:
                             buffer.write(u32(immediate_current[type]))
-                            buffer.skip(4)
+                            buffer.write(u32(0))
                 else:
                     for type in type_standard:
                         buffer.write(u32(immediate_current[type]))
-                        buffer.skip(4)
+                        buffer.write(u32(0))
                 for type in type_standard:
                     if "Input Parameters" in node:
                         if type in node["Input Parameters"]:
@@ -916,10 +932,10 @@ class AINB:
                             input_current[type] = len(input_parameters[type])
                         else:
                             buffer.write(u32(input_current[type]))
-                            buffer.skip(4)
+                            buffer.write(u32(0))
                     else:
                         buffer.write(u32(input_current[type]))
-                        buffer.skip(4)
+                        buffer.write(u32(0))
                     if "Output Parameters" in node:
                         if type in node["Output Parameters"]:
                             for entry in node["Output Parameters"][type]:
@@ -929,10 +945,10 @@ class AINB:
                             output_current[type] = len(output_parameters[type])
                         else:
                             buffer.write(u32(output_current[type]))
-                            buffer.skip(4)
+                            buffer.write(u32(0))
                     else:
                         buffer.write(u32(output_current[type]))
-                        buffer.skip(4)
+                        buffer.write(u32(0))
                 if "Linked Nodes" in node:
                     total = 0
                     residents = []
@@ -957,10 +973,9 @@ class AINB:
                                 buffer.write(u32(entry["Node Index"]))
                                 buffer.add_string(entry["Parameter"])
                                 buffer.write(u32(buffer._string_refs[entry["Parameter"]]))
-                                buffer.skip(8)
                                 buffer.seek(pos)
                                 is_input = False
-                                if "Selector" in node["Node Type"]:
+                                if "Selector" in node["Node Type"] or node["Node Type"] == "Element_Expression":
                                     if "Input Parameters" in node:
                                         for type in node["Input Parameters"]:
                                             for parameter in node["Input Parameters"][type]:
@@ -968,6 +983,11 @@ class AINB:
                                                     is_input = True
                                 if is_input:
                                     current += 16
+                                elif node["Node Type"] == "Element_Expression" and "Output Parameters" in node:
+                                    if "vec3f" in node["Output Parameters"]:
+                                        for parameter in node["Output Parameters"]["vec3f"]:
+                                            if entry["Parameter"] == parameter["Name"]:
+                                                current += 24
                                 else:
                                     current += 8
                         elif connection == "Standard Link":
@@ -988,11 +1008,11 @@ class AINB:
                                         buffer.write(u32(buffer._string_refs["その他"]))
                                     else:
                                         buffer.write(f32(entry["Condition Min"]))
-                                    buffer.skip(4)
+                                    buffer.write(u32(0))
                                     if "Condition Max" in entry:
                                         buffer.write(f32(entry["Condition Max"]))
                                     else:
-                                        buffer.skip(4)
+                                        buffer.write(u32(0))
                                     buffer.seek(pos)
                                     current += 40
                                 elif node["Node Type"] in ["Element_StringSelector", "Element_S32Selector", "Element_RandomSelector"]:
@@ -1021,7 +1041,7 @@ class AINB:
                                                 buffer.add_string(entry["Condition"])
                                                 buffer.write(u32(buffer._string_refs[entry["Condition"]]))
                                         else:
-                                            buffer.skip(4)
+                                            buffer.write(u32(0))
                                     elif "その他" in entry:
                                         buffer.add_string("その他")
                                         buffer.write(u32(buffer._string_refs["その他"]))
@@ -1061,7 +1081,7 @@ class AINB:
                                     elif node["Node Type"] == "Element_S32Selector":
                                         buffer.write(u32(self.global_params["int"].index(entry["Input"]) | (1 << 31)))
                                 buffer.seek(pos)
-                                if "Selector" in node["Node Type"]:
+                                if "Selector" in node["Node Type"] or node["Node Type"] == "Element_Expression":
                                     current += 16
                                 else:
                                     current += 8
@@ -1074,12 +1094,158 @@ class AINB:
                                 residents.append(entry["Update Info"])
                                 buffer.write(u32(len(residents) - 1))
                                 current += 8
-        print(buffer._string_refs)
+                    buffer.seek(current)
+                else:
+                    for i in range(5):
+                        buffer.write(u32(0))
+            attachment_index_start = buffer.tell()
+            buffer.seek(116 + self.command_count * 24 + 20)
+            for i in range(len(self.nodes)):
+                buffer.write(u32(bodies[i]))
+                buffer.skip(56)
+        else:
+            attachment_index_start = buffer.tell()
+        buffer.seek(attachment_index_start)
+        if attachments:
+            for entry in attachment_indices:
+                buffer.write(u32(entry))
+            attachment_start = buffer.tell()
+            for attachment in attachments:
+                buffer.add_string(attachment["Name"])
+                buffer.write(u32(buffer._string_refs[attachment["Name"]]))
+                buffer.write(u32(attachment_start + 16 * attachments.index(attachment)))
+                buffer.write(u16(attachment["EXB Field Count"]))
+                buffer.write(u16(attachment["EXB Value Size"]))
+                buffer.write(u32(int(attachment["Name Hash"][2:], 16)))
+            for attachment in attachments:
+                if "Debug" in attachment["Name"]:
+                    buffer.write(u32(1))
+                else:
+                    buffer.write(u32(0))
+                for type in type_standard:
+                    if "Parameters" in attachment:
+                        if type in attachment["Parameters"]:
+                            for entry in attachment["Parameters"][type]:
+                                immediate_parameters[type].append(entry)
+                            buffer.write(u32(len(immediate_parameters[type]) - len(attachment["Parameters"][type])))
+                            buffer.write(u32(len(attachment["Parameters"][type])))
+                            immediate_current[type] = len(immediate_parameters[type])
+                        else:
+                            buffer.write(u32(immediate_current[type]))
+                            buffer.write(u32(0))
+                    else:
+                        buffer.write(u32(immediate_current[type]))
+                        buffer.write(u32(0))
+                pos = buffer.tell()
+                for i in range(6):
+                    buffer.write(u32(0))
+                    buffer.write(u32(pos + 24)) # Not sure what the address here means
+        else:
+            attachment_start = buffer.tell()
+        immediate_start = buffer.tell()
+        current = immediate_start + 24
+        for type in type_standard:
+            buffer.write(u32(current))
+            if type != "vec3f":
+                current += len(immediate_parameters[type] * 12)
+            else:
+                current += len(immediate_parameters[type] * 20)
+        for type in type_standard:
+            for entry in immediate_parameters[type]:
+                buffer.add_string(entry["Name"])
+                buffer.write(u32(buffer._string_refs[entry["Name"]]))
+                if type == "userdefined":
+                    buffer.add_string(entry["Class"])
+                    buffer.write(u32(buffer._string_refs[entry["Class"]]))
+                if "Global/EXB Index" in entry:
+                    buffer.write(u16(entry["Global/EXB Index"]))
+                else:
+                    buffer.write(u16(0))
+                if "Flags" in entry:
+                    for flag in entry["Flags"]:
+                        if isinstance(flag, int):
+                            buffer.write(u16(flag))
+                            break
+                else:
+                    buffer.write(u16(0))
+                if type == "int":
+                    buffer.write(u32(entry["Value"]))
+                elif type == "bool":
+                    buffer.write(u32(int(entry["Value"])))
+                elif type == "float":
+                    buffer.write(f32(entry["Value"]))
+                elif type == "string":
+                    buffer.add_string(entry["Value"])
+                    buffer.write(u32(buffer._string_refs[entry["Value"]]))
+                elif type == "vec3f":
+                    for value in entry["Value"]:
+                        buffer.write(f32(value))
+        io_start = buffer.tell()
+        current = io_start + 48
+        for type in type_standard:
+            buffer.write(u32(current))
+            if type == "vec3f":
+                current += len(input_parameters[type] * 24)
+            elif type == "userdefined":
+                current += len(input_parameters[type] * 20)
+            else:
+                current += len(input_parameters[type] * 16)
+            buffer.write(u32(current))
+            if type != "userdefined":
+                current += len(output_parameters[type] * 4)
+            else:
+                current += len(output_parameters[type] * 8)
+        for type in type_standard:
+            for entry in input_parameters[type]:
+                buffer.add_string(entry["Name"])
+                buffer.write(u32(buffer._string_refs[entry["Name"]]))
+                if type == "userdefined":
+                    buffer.add_string(entry["Class"])
+                    buffer.write(u32(buffer._string_refs[entry["Class"]]))
+                buffer.write(s16(entry["Node Index"]))
+                buffer.write(s16(entry["Parameter Index"]))
+                if "Global/EXB Index" in entry:
+                    buffer.write(u16(entry["Global/EXB Index"]))
+                else:
+                    buffer.write(u16(0))
+                if "Flags" in entry:
+                    for flag in entry["Flags"]:
+                        if isinstance(flag, int):
+                            buffer.write(u16(flag))
+                            break
+                else:
+                    buffer.write(u16(0))
+                if type == "int":
+                    buffer.write(u32(entry["Value"]))
+                elif type == "bool":
+                    buffer.write(u32(int(entry["Value"])))
+                elif type == "float":
+                    buffer.write(f32(entry["Value"]))
+                elif type == "string":
+                    buffer.add_string(entry["Value"])
+                    buffer.write(u32(buffer._string_refs[entry["Value"]]))
+                elif type == "vec3f":
+                    for value in entry["Value"]:
+                        buffer.write(f32(value))
+                elif type == "userdefined":
+                    buffer.write(u32(entry["Value"]))
+            print(output_parameters[type])
+            for entry in output_parameters[type]:
+                buffer.add_string(entry["Name"])
+                offset = buffer._string_refs[entry["Name"]]
+                if "Set Pointer Flag Bit Zero" in entry:
+                    buffer.write(u32(offset | (1 << 31)))
+                else:
+                    buffer.write(u32(offset))
+                if type == "userdefined":
+                    buffer.add_string(entry["Class"])
+                    buffer.write(u32(buffer._string_refs[entry["Class"]]))
+
         return buffer
 
 
 if __name__ == "__main__":
-    with open('Npc_Gerudo_Queen_Young.event.root.ainb', 'rb') as file:
+    with open('PlayerCamera.root.ainb', 'rb') as file:
         data = file.read()
 
     test = AINB(data)
@@ -1096,5 +1262,4 @@ if __name__ == "__main__":
 - Find ways to improve speed
 - Use functions listed with nodes rather than in the EXB section
 - Maybe this? https://stackoverflow.com/questions/5804052/improve-speed-of-reading-and-converting-from-binary-file
-- Figure out entry lengths for output/input connections
 """
