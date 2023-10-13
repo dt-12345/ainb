@@ -1,5 +1,5 @@
 # AINB-Serializer
-WIP
+WIP Python commands to convert between AINB and JSON/YAML
 
 Use the functions in converter.py to convert
 
