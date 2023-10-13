@@ -86,6 +86,9 @@ class WriteStream(Stream):
         self._string_list = [] # List of strings in file
         self._strings = b'' # String pool to write to file
         self._string_refs = {} # Maps strings to relative offsets
+        self._string_list_exb = [] # List of strings in file
+        self._strings_exb = b'' # String pool to write to file
+        self._string_refs_exb = {} # Maps strings to relative offsets
 
     def add_string(self, string):
         if string not in self._string_list:
@@ -95,6 +98,15 @@ class WriteStream(Stream):
             self._strings += encoded
             if encoded[-1:] != b'\x00': # All strings must end with a null termination character
                 self._strings += b'\x00'
+
+    def add_string_exb(self, string):
+        if string not in self._string_list_exb:
+            encoded = string.encode()
+            self._string_list_exb.append(string)
+            self._string_refs_exb[string] = len(self._strings_exb)
+            self._strings_exb += encoded
+            if encoded[-1:] != b'\x00': # All strings must end with a null termination character
+                self._strings_exb += b'\x00'
 
     def write(self, data):
         self.stream.write(data)

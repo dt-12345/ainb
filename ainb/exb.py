@@ -55,7 +55,7 @@ class Source(Enum):
     UserIn              = 10
 
 class EXB:
-    def __init__(self, data, from_dict=False):
+    def __init__(self, data, functions=None, from_dict=False):
         if not from_dict:
             self.stream = ReadStream(data)
             self.data = data
@@ -119,12 +119,12 @@ class EXB:
             self.field_entry_count = data["Info"]["EXB Field Entry Count"]
             self.scratch_32_size = data["Info"]["32-bit Scratch Memory Size"]
             self.scratch_64_size = data["Info"]["64-bit Scratch Memory Size"]
-            self.commands = data["Commands"]
+            self.commands = list(dict(sorted(functions.items())).values())
             self.instructions = []
-            for command in data["Commands"]:
-                for key in command:
+            for entry in self.commands:
+                for key in entry:
                     if key == "Instructions":
-                        for instruction in command[key]:
+                        for instruction in entry[key]:
                             self.instructions.append(instruction)
 
         self.exb_section = {
@@ -175,7 +175,7 @@ class EXB:
                     elif instruction["Data Type"] == "f32":
                         instruction[f"{i} Value"] = self.stream.read_f32()
                     elif instruction["Data Type"] == "vec3f":
-                        instruction[f"{i} Value"] = (self.stream.read_f32(), self.stream.read_f32(), self.stream.read_f32())
+                        instruction[f"{i} Value"] = [self.stream.read_f32(), self.stream.read_f32(), self.stream.read_f32()]
                     self.stream.seek(jumpback)
                 if instruction[f"{i} Source"] == "ParamTblStr":
                     jumpback = self.stream.tell()
@@ -193,7 +193,7 @@ class EXB:
             return instruction
         
     def ToBytes(self, exb, dest, offset=0): # exb is an EXB object
-        buffer = WriteStream(dest)
+        buffer = dest
         buffer.seek(offset)
         buffer.write(b'EXB ') # Magic
         buffer.write(b'\x02\x00\x00\x00')
@@ -230,9 +230,10 @@ class EXB:
                     elif key == "Static Memory Index":
                         buffer.write(u16(instruction[key]))
                     elif key == "Signature":
-                        buffer.add_string(instruction[key])
-                        signature_offsets.append(buffer._string_refs[instruction[key]])
-                        buffer.write(u32(signature_offsets.index(buffer._string_refs[instruction[key]])))
+                        buffer.add_string_exb(instruction[key])
+                        if buffer._string_refs_exb[instruction[key]] not in signature_offsets:
+                            signature_offsets.append(buffer._string_refs_exb[instruction[key]])
+                        buffer.write(u32(signature_offsets.index(buffer._string_refs_exb[instruction[key]])))
             else:
                 buffer.write(u8(1))
                 buffer.skip(7)
@@ -266,15 +267,16 @@ class EXB:
                                 string_start = buffer.tell()
                     if instruction[key.strip("Value") + "Source"] == "ParamTblStr":
                         buffer.seek(param_start + instruction[key.strip("Value") + "Index/Value"])
-                        buffer.add_string(instruction[key])
-                        buffer.write(u32(buffer._string_refs[instruction[key]]))
+                        buffer.add_string_exb(instruction[key])
+                        buffer.write(u32(buffer._string_refs_exb[instruction[key]]))
                         if buffer.tell() > string_start:
                             string_start = buffer.tell()
         buffer.seek(string_start)
-        buffer.write(buffer._strings)
+        buffer.write(buffer._strings_exb)
+        end = buffer.tell()
         buffer.seek(offset + 28)
-        buffer.write(u32(command_start))
-        buffer.write(u32(sig_start))
-        buffer.write(u32(param_start))
-        buffer.write(u32(string_start))
-        return buffer
+        buffer.write(u32(command_start - offset))
+        buffer.write(u32(sig_start - offset))
+        buffer.write(u32(param_start - offset))
+        buffer.write(u32(string_start - offset))
+        return end
