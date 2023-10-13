@@ -928,10 +928,12 @@ class AINB:
                     index += len(self.global_params[type])
                 if type == "vec3f" and "vec3f" in self.global_params:
                     buffer.write(u16(pos))
-                    pos = pos + index * 12
+                    pos = pos + len(self.global_params[type]) * 12
+                elif type in self.global_params:
+                    buffer.write(u16(pos))
+                    pos = pos + len(self.global_params[type]) * 4
                 else:
                     buffer.write(u16(pos))
-                    pos = pos + index * 4
                 buffer.write(u16(0))
             files = []
             for type in self.global_params:
