@@ -97,11 +97,6 @@ class AINB:
                 "Magic" : self.magic,
                 "Version" : hex(self.version),
                 "Filename" : self.filename,
-                "Command Count" : self.command_count,
-                "Node Count" : self.node_count,
-                "Precondition Node Count" : self.precondition_count,
-                "Attachment Count" : self.attachment_count,
-                "Output Node Count" : self.output_count,
                 "File Category" : self.file_category
             }
 
@@ -140,6 +135,7 @@ class AINB:
             self.immediate_parameters = {key : value for key, value in self.immediate_parameters.items() if value}
 
             # Attachment Parameters
+            self.attachment_parameters = []
             if self.attachment_count > 0:
                 self.stream.seek(self.attachment_offset)
                 self.attachment_parameters = [self.AttachmentEntry()]
@@ -233,8 +229,8 @@ class AINB:
             self.is_replaced = self.stream.read_u8() # Set at runtime, just ignore
             self.stream.skip(1)
             count = self.stream.read_u16()
-            node_count = self.stream.read_s16() # Number of overwritten nodes
-            attachment_count = self.stream.read_s16() # Number of overwritten attachment parameters
+            node_count = self.stream.read_s16() # = Node count - node removal count - 2 * replacement node count
+            attachment_count = self.stream.read_s16() # = Attachment count - attachment removal coutn
             self.replacements = []
             for i in range(count):
                 self.replacements.append(self.ChildReplace())
@@ -295,11 +291,6 @@ class AINB:
             self.magic = data["Info"]["Magic"]
             self.version = int(data["Info"]["Version"], 16)
             self.filename = data["Info"]["Filename"]
-            self.command_count = data["Info"]["Command Count"]
-            self.node_count = data["Info"]["Node Count"]
-            self.precondition_count = data["Info"]["Precondition Node Count"]
-            self.attachment_count = data["Info"]["Attachment Count"]
-            self.output_count = data["Info"]["Output Node Count"]
             self.file_category = data["Info"]["File Category"]
 
             # Defaults
@@ -362,11 +353,6 @@ class AINB:
                 "Magic" : self.magic,
                 "Version" : hex(self.version),
                 "Filename" : self.filename,
-                "Command Count" : self.command_count,
-                "Node Count" : self.node_count,
-                "Precondition Node Count" : self.precondition_count,
-                "Attachment Count" : self.attachment_count,
-                "Output Node Count" : self.output_count,
                 "File Category" : self.file_category
             }
         if self.commands:
@@ -801,12 +787,12 @@ class AINB:
         buffer.write(b'\x07\x04\x00\x00')
         buffer.add_string(self.filename)
         buffer.write(u32(buffer._string_refs[self.filename]))
-        buffer.write(u32(self.command_count))
-        buffer.write(u32(self.node_count))
-        buffer.write(u32(self.precondition_count))
-        buffer.write(u32(self.attachment_count))
-        buffer.write(u32(self.output_count))
-        buffer.write(u32(116 + 24 * self.command_count + 60 * self.node_count))
+        buffer.write(u32(len(self.commands)))
+        buffer.write(u32(len(self.nodes)))
+        buffer.write(u32(len([precon for precon in [node for node in self.nodes if "Flags" in node] if "Is Precondition Node" in precon["Flags"]])))
+        buffer.write(u32(0)) # Skip for now
+        buffer.write(u32(len([node for node in self.nodes if "Output" in node["Node Type"]])))
+        buffer.write(u32(116 + 24 * len(self.commands) + 60 * len(self.nodes)))
         for i in range(11):
             buffer.write(u32(4)) # Skip writing offsets until they're known
         buffer.write(u64(0)) # Skip 8
@@ -1202,7 +1188,7 @@ class AINB:
                     for i in range(5):
                         buffer.write(u32(0))
             attachment_index_start = buffer.tell()
-            buffer.seek(116 + self.command_count * 24 + 20)
+            buffer.seek(116 + len(self.commands) * 24 + 20)
             for i in range(len(self.nodes)):
                 buffer.write(u32(bodies[i]))
                 buffer.skip(56)
@@ -1425,8 +1411,8 @@ class AINB:
             buffer.write(u16(len(replacements)))
             attach_count = 0
             node_count = 0
-            override_node = self.node_count
-            override_attach = self.attachment_count
+            override_node = len(self.nodes)
+            override_attach = len(self.attachment_parameters)
             for replacement in replacements:
                 if replacement[0] == 2:
                     attach_count += 1
@@ -1462,6 +1448,8 @@ class AINB:
         buffer.write(u32(0))
         string_start = buffer.tell()
         buffer.write(buffer._strings)
+        buffer.seek(24)
+        buffer.write(u32(len(attachments)))
         buffer.seek(36)
         buffer.write(u32(string_start))
         buffer.write(u32(resolve_start))
