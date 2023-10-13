@@ -30,6 +30,6 @@ def yaml_to_ainb(filepath):
     file = ainb.AINB(data, from_dict=True)
     with open(file.filename + ".ainb", 'wb') as outfile:
         file.ToBytes(file, outfile)
-
+        
 if __name__ == '__main__':
     globals()[sys.argv[1]](sys.argv[2])

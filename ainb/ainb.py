@@ -466,9 +466,9 @@ class AINB:
         flags = self.stream.read_u16()
         if flags:
             entry["Flags"] = []
-            if flags & 0x8000:
+            if flags & 0x80:
                 entry["Flags"].append("Pulse Thread Local Storage")
-            if flags & 0x01:
+            if flags & 0x100:
                 entry["Flags"].append("Set Pointer Flag Bit Zero")
             entry["Flags"].append(flags)
         if type == "string":
@@ -536,9 +536,9 @@ class AINB:
         flags = self.stream.read_u16()
         if flags:
             entry["Flags"] = []
-            if flags & 0x8000:
+            if flags & 0x80:
                 entry["Flags"].append("Pulse Thread Local Storage")
-            if flags & 0x01:
+            if flags & 0x100:
                 entry["Flags"].append("Set Pointer Flag Bit Zero")
             entry["Flags"].append(flags)
         if type == "string":
@@ -566,7 +566,7 @@ class AINB:
         entry = {}
         flags = self.stream.read_u32()
         entry["Name"] = self.string_pool.read_string(flags & 0x3FFFFFFF)
-        flag = flags >> 31
+        flag = flags & 0x80000000
         if flag:
             entry["Set Pointer Flag Bit Zero"] = True
         if type == "userdefined":
@@ -581,9 +581,9 @@ class AINB:
         flags = self.stream.read_u16()
         if flags:
             entry["Flags"] = []
-            if flags & 0x8000:
+            if flags & 0x80:
                 entry["Flags"].append("Pulse Thread Local Storage")
-            if flags & 0x01:
+            if flags & 0x100:
                 entry["Flags"].append("Set Pointer Flag Bit Zero")
             entry["Flags"].append(flags)
             if "0xc200" in [hex(i) for i in entry["Flags"] if isinstance(i, int)]:
