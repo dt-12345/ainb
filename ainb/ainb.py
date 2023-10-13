@@ -188,12 +188,13 @@ class AINB:
             # Resident Update Array
             self.stream.seek(self.resident_update_offset)
             self.resident_update_array = []
-            offsets = [self.stream.read_u32()]
-            while self.stream.tell() < offsets[0]:
-                offsets.append(self.stream.read_u32())
-            for offset in offsets:
-                self.stream.seek(offset)
-                self.resident_update_array.append(self.ResidentEntry())
+            if self.resident_update_offset != self.precondition_offset:
+                offsets = [self.stream.read_u32()]
+                while self.stream.tell() < offsets[0]:
+                    offsets.append(self.stream.read_u32())
+                for offset in offsets:
+                    self.stream.seek(offset)
+                    self.resident_update_array.append(self.ResidentEntry())
 
             # Precondition Nodes
             self.stream.seek(self.precondition_offset)
