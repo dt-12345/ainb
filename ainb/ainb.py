@@ -1073,9 +1073,9 @@ class AINB:
                                 else:
                                     current += 8
                                 if "Is Removed at Runtime" in entry:
-                                    replacements.append((0, entry["Node Index"], i))
+                                    replacements.append((0, node["Node Index"], i))
                                 elif "Replacement Node Index" in entry:
-                                    replacements.append((1, entry["Node Index"], i, entry["Replacement Node Index"]))
+                                    replacements.append((1, node["Node Index"], i, entry["Replacement Node Index"]))
                                 i += 1
                         elif connection == "Standard Link":
                             for entry in node["Linked Nodes"][connection]:
@@ -1148,9 +1148,9 @@ class AINB:
                                     buffer.seek(pos)
                                     current += 8
                                 if "Is Removed at Runtime" in entry:
-                                    replacements.append((0, entry["Node Index"], i))
+                                    replacements.append((0, node["Node Index"], i))
                                 elif "Replacement Node Index" in entry:
-                                    replacements.append((1, entry["Node Index"], i, entry["Replacement Node Index"]))
+                                    replacements.append((1, node["Node Index"], i, entry["Replacement Node Index"]))
                                 i += 1
                         elif connection != "Resident Update Link":
                             for entry in node["Linked Nodes"][connection]:
@@ -1178,9 +1178,9 @@ class AINB:
                                 else:
                                     current += 8
                                 if "Is Removed at Runtime" in entry:
-                                    replacements.append((0, entry["Node Index"], i))
+                                    replacements.append((0, node["Node Index"], i))
                                 elif "Replacement Node Index" in entry:
-                                    replacements.append((1, entry["Node Index"], i, entry["Replacement Node Index"]))
+                                    replacements.append((1, node["Node Index"], i, entry["Replacement Node Index"]))
                                 i += 1
                         else:
                             for entry in node["Linked Nodes"][connection]:
@@ -1192,9 +1192,9 @@ class AINB:
                                 buffer.write(u32(len(residents) - 1))
                                 current += 8
                                 if "Is Removed at Runtime" in entry:
-                                    replacements.append((0, entry["Node Index"], i))
+                                    replacements.append((0, node["Node Index"], i))
                                 elif "Replacement Node Index" in entry:
-                                    replacements.append((1, entry["Node Index"], i, entry["Replacement Node Index"]))
+                                    replacements.append((1, node["Node Index"], i, entry["Replacement Node Index"]))
                                 i += 1
                                 buffer.seek(pos)
                     buffer.seek(current)
@@ -1425,13 +1425,26 @@ class AINB:
             buffer.write(u16(len(replacements)))
             attach_count = 0
             node_count = 0
+            override_node = self.node_count
+            override_attach = self.attachment_count
             for replacement in replacements:
                 if replacement[0] == 2:
                     attach_count += 1
+                    override_attach -= 1
                 if replacement[0] in [0, 1]:
                     node_count += 1
-            buffer.write(s16(attach_count))
-            buffer.write(s16(node_count))
+                    if replacement[0] == 0:
+                        override_node -= 1
+                    if replacement[0] == 1:
+                        override_node -= 2
+            if node_count > 0:
+                buffer.write(s16(override_node))
+            else:
+                buffer.write(s16(-1))
+            if attach_count > 0:
+                buffer.write(s16(override_attach))
+            else:
+                buffer.write(s16(-1))
             for replacement in replacements:
                 buffer.write(u8(replacement[0]))
                 buffer.write(u8(0))
