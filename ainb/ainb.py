@@ -615,7 +615,6 @@ class AINB:
             entry["Flags"].append("Update Post Current Command Calc")
         if flags & 1:
             entry["Flags"].append("Is Valid Update")
-        print(entry["Flags"])
         if "Is Valid Update" not in entry["Flags"]:
             entry["String"] = self.string_pool.read_string(self.stream.read_u32())
         return entry
@@ -1183,7 +1182,6 @@ class AINB:
                                 i += 1
                         else:
                             for entry in node["Linked Nodes"][connection]:
-                                print(hex(current))
                                 buffer.write(u32(current))
                                 pos = buffer.tell()
                                 buffer.seek(current)
@@ -1368,8 +1366,14 @@ class AINB:
                     buffer.write(u16(0))
         resident_start = buffer.tell()
         if residents:
+            current = resident_start + len(residents) * 4
             for i in range(len(residents)):
-                buffer.write(u32(resident_start + i * 4))
+                if "String" in residents[i]:
+                    n = 8
+                else:
+                    n = 4
+                buffer.write(u32(current))
+                current += n
             for resident in residents:
                 flags = 0
                 if "Is Valid Update" in resident["Flags"]:
