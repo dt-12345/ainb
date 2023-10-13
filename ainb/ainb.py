@@ -2,7 +2,6 @@ from exb import EXB
 from utils import *
 from enum import Enum
 import json
-import time
 
 # Enums and stuff
 class Node_Type(Enum):
@@ -193,7 +192,11 @@ class AINB:
             # Resident Update Array
             self.stream.seek(self.resident_update_offset)
             self.resident_update_array = []
-            while self.stream.tell() < self.precondition_offset:
+            offsets = [self.stream.read_u32()]
+            while self.stream.tell() < offsets[0]:
+                offsets.append(self.stream.read_u32())
+            for offset in offsets:
+                self.stream.seek(offset)
                 self.resident_update_array.append(self.ResidentEntry())
 
             # Precondition Nodes
@@ -610,8 +613,9 @@ class AINB:
         entry["Flags"] = []
         if flags >> 31:
             entry["Flags"].append("Update Post Current Command Calc")
-        if flags & 0xFF:
+        if flags & 1:
             entry["Flags"].append("Is Valid Update")
+        print(entry["Flags"])
         if "Is Valid Update" not in entry["Flags"]:
             entry["String"] = self.string_pool.read_string(self.stream.read_u32())
         return entry
@@ -1179,6 +1183,7 @@ class AINB:
                                 i += 1
                         else:
                             for entry in node["Linked Nodes"][connection]:
+                                print(hex(current))
                                 buffer.write(u32(current))
                                 pos = buffer.tell()
                                 buffer.seek(current)
@@ -1191,6 +1196,7 @@ class AINB:
                                 elif "Replacement Node Index" in entry:
                                     replacements.append((1, entry["Node Index"], i, entry["Replacement Node Index"]))
                                 i += 1
+                                buffer.seek(pos)
                     buffer.seek(current)
                 else:
                     for i in range(5):
@@ -1362,10 +1368,12 @@ class AINB:
                     buffer.write(u16(0))
         resident_start = buffer.tell()
         if residents:
+            for i in range(len(residents)):
+                buffer.write(u32(resident_start + i * 4))
             for resident in residents:
                 flags = 0
                 if "Is Valid Update" in resident["Flags"]:
-                    flags = flags | 255
+                    flags = flags | 1
                 if "Update Post Current Command Calc" in resident["Flags"]:
                     flags = flags | (1 << 31)
                 buffer.write(u32(flags))
@@ -1444,7 +1452,10 @@ class AINB:
         buffer.write(u32(multi_start))
         buffer.write(u32(attachment_start))
         buffer.write(u32(attachment_index_start))
-        buffer.write(u32(exb_start))
+        if self.exb:
+            buffer.write(u32(exb_start))
+        else:
+            buffer.write(u32(0))
         buffer.write(u32(child_replace_start))
         buffer.write(u32(precondition_start))
         buffer.write(u32(resident_start)) # Always the same as the resident array offset, unused
