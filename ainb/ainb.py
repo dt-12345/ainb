@@ -1382,8 +1382,8 @@ class AINB:
             end = self.exb.ToBytes(self.exb, buffer, exb_start)
             buffer.seek(end)
         embed_ainb_start = buffer.tell()
+        buffer.write(u32(len(self.ainb_array)))
         if self.ainb_array:
-            buffer.write(u32(len(self.ainb_array)))
             for ainb in self.ainb_array:
                 buffer.add_string(ainb["File Path"])
                 buffer.write(u32(buffer._string_refs[ainb["File Path"]]))
