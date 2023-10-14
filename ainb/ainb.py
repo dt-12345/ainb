@@ -449,6 +449,7 @@ class AINB:
             for entry in self.global_parameters[type]:
                 if "Index" in entry:
                     entry["File Reference"] = self.global_references[entry["Index"]]
+                    del entry["Index"]
         self.global_parameters = {key : value for key, value in self.global_parameters.items() if value} # Remove types with no entries
         return self.global_parameters
     
