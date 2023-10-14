@@ -422,6 +422,7 @@ class AINB:
         entry = {}
         entry["Filename"] = self.string_pool.read_string(self.stream.read_u32())
         entry["Name Hash"] = hex(self.stream.read_u32())
+        del entry["Name Hash"]
         entry["Unknown Hash 1"] = hex(self.stream.read_u32())
         entry["Unknown Hash 2"] = hex(self.stream.read_u32())
         return entry
@@ -499,6 +500,7 @@ class AINB:
         entry["EXB Field Count"] = self.stream.read_u16()
         entry["EXB Value Size"] = self.stream.read_u16()
         entry["Name Hash"] = hex(self.stream.read_u32())
+        del entry["Name Hash"]
         return entry
     
     def AttachmentParameters(self):
@@ -652,10 +654,12 @@ class AINB:
             entry["Attachments"] = []
             for i in range(entry["Attachment Count"]):
                 entry["Attachments"].append(self.attachment_parameters[self.attachment_array[entry["Base Attachment Index"] + i]])
-        del entry["Attachment Count"]
+        # We don't need these anymore actually
+        del entry["Attachment Count"], entry["Base Attachment Index"], entry["Multi-Param Count"], entry["Precondition Count"], entry["Name Hash"]
         jumpback = self.stream.tell()
         # Match Node Parameters
         self.stream.seek(entry["Parameters Offset"])
+        del entry["Parameters Offset"]
         immediate_parameters = {}
         for i in range(6):
             index = self.stream.read_u32()
