@@ -22,7 +22,7 @@ def ainb_to_yaml(filepath):
         data = file.read()
     file = ainb.AINB(data)
     with open(file.filename + ".yml", 'w', encoding='utf-8') as outfile:
-        yaml.dump(file.output_dict, outfile, sort_keys=False)
+        yaml.dump(file.output_dict, outfile, sort_keys=False, allow_unicode=True, encoding='utf-8')
 
 def yaml_to_ainb(filepath):
     with open(filepath, 'r', encoding='utf-8') as file:

@@ -2,6 +2,7 @@ from exb import EXB
 from utils import *
 from enum import Enum
 import json
+import mmh3
 
 # Enums and stuff
 class Node_Type(Enum):
@@ -650,6 +651,7 @@ class AINB:
             entry["Attachments"] = []
             for i in range(entry["Attachment Count"]):
                 entry["Attachments"].append(self.attachment_parameters[self.attachment_array[entry["Base Attachment Index"] + i]])
+        del entry["Attachment Count"]
         jumpback = self.stream.tell()
         # Match Node Parameters
         self.stream.seek(entry["Parameters Offset"])
@@ -833,10 +835,14 @@ class AINB:
         precondition_nodes = {}
         entry_strings = []
         replacements = []
+        multi_counts = {}
+        attach_counts = {}
+        precon_counts = {}
 
         # Nodes
         if self.nodes:
             for node in self.nodes:
+                buffer.add_string(node["Name"])
                 if "Attachments" in node:
                     i = 0
                     for attachment in node["Attachments"]:
@@ -847,59 +853,40 @@ class AINB:
                         i += 1
                     for attachment in node["Attachments"]:
                         attachment_indices.append(attachments.index(attachment))
+                    attach_counts[node["Node Index"]] = len(node["Attachments"])
+                else:
+                    attach_counts[node["Node Index"]] = 0
                 if "Immediate Parameters" in node:
                     for type in node["Immediate Parameters"]:
                         for entry in node["Immediate Parameters"][type]:
                             if "Sources" in entry:
                                 for parameter in entry["Sources"]:
                                     multis.append(parameter)
+                                if node["Node Index"] in multi_counts:
+                                    multi_counts[node["Node Index"]] += len(entry["Sources"])
+                                else:
+                                    multi_counts[node["Node Index"]] = len(entry["Sources"])
                 if "Input Parameters" in node:
                     for type in node["Input Parameters"]:
                         for entry in node["Input Parameters"][type]:
                             if "Sources" in entry:
                                 for parameter in entry["Sources"]:
                                     multis.append(parameter)
+                                if node["Node Index"] in multi_counts:
+                                    multi_counts[node["Node Index"]] += len(entry["Sources"])
+                                else:
+                                    multi_counts[node["Node Index"]] = len(entry["Sources"])
+                if node["Node Index"] not in multi_counts:
+                    multi_counts[node["Node Index"]] = 0
                 if "Precondition Nodes" in node:
-                    for i in range(node["Precondition Count"]):
+                    for i in range(len(node["Precondition Nodes"])):
                         precondition_nodes.update({node["Base Precondition Node"] + i : node["Precondition Nodes"][i]})
+                    precon_counts[node["Node Index"]] = len(node["Precondition Nodes"])
+                else:
+                    precon_counts[node["Node Index"]] = 0
                 if "Entry String" in node:
                     entry_strings.append((node["Node Index"], node["Entry String"]))
-                buffer.write(u16(Node_Type[node["Node Type"]].value))
-                buffer.write(u16(node["Node Index"]))
-                buffer.write(u16(node["Attachment Count"]))
-                flags = 0
-                if "Flags" in node:
-                    if "Is Precondition Node" in node["Flags"]:
-                        flags = flags | 1
-                    if "Is External AINB" in node["Flags"]:
-                        flags = flags | 2
-                    if "Is Resident Node" in node["Flags"]:
-                        flags = flags | 4
-                buffer.write(u8(flags) + padding())
-                buffer.add_string(node["Name"])
-                buffer.write(u32(buffer._string_refs[node["Name"]]))
-                buffer.write(u32(int(node["Name Hash"][2:], 16)))
-                buffer.write(u32(0))
-                buffer.write(u32(0)) # Write offset later
-                buffer.write(u16(node["EXB Field Count"]))
-                buffer.write(u16(node["EXB Value Size"]))
-                buffer.write(u16(node["Multi-Param Count"]))
-                buffer.write(u16(0))
-                buffer.write(u32(node["Base Attachment Index"]))
-                buffer.write(u16(node["Base Precondition Node"]))
-                buffer.write(u16(node["Precondition Count"]))
-                buffer.write(u16(0)) # 0x58 Section Offset (Unused in TotK)
-                buffer.write(u16(0))
-                parts = node["GUID"].split('-')
-                parts = [int(i, 16) for i in parts]
-                buffer.write(u32(parts[0]))
-                buffer.write(u16(parts[1]))
-                buffer.write(u16(parts[2]))
-                buffer.write(u16(parts[3]))
-                parts[4] = hex(parts[4])[2:]
-                while len(parts[4]) < 12:
-                    parts[4] = "0" + parts[4]
-                buffer.write(byte_custom(bytes.fromhex(parts[4]), 6))
+        buffer.skip(len(self.nodes) * 60)
 
         # Global Parameters
         if self.global_params:
@@ -961,7 +948,7 @@ class AINB:
             for file in files:
                 buffer.add_string(file["Filename"])
                 buffer.write(u32(buffer._string_refs[file["Filename"]]))
-                buffer.write(u32(int(file["Name Hash"][2:], 16)))
+                buffer.write(u32(mmh3.hash(file["Filename"], signed=False)))
                 buffer.write(u32(int(file["Unknown Hash 1"][2:], 16)))
                 buffer.write(u32(int(file["Unknown Hash 2"][2:], 16)))        
         else:
@@ -969,7 +956,7 @@ class AINB:
 
         immediate_current = dict(zip(type_standard, [0, 0, 0, 0, 0, 0]))
         input_current = dict(zip(type_standard, [0, 0, 0, 0, 0, 0]))
-        output_current = dict(zip(type_standard, [0, 0, 0, 0, 0, 0]))      
+        output_current = dict(zip(type_standard, [0, 0, 0, 0, 0, 0])) 
 
         residents = []
         bodies = []
@@ -1188,25 +1175,62 @@ class AINB:
                 else:
                     for i in range(5):
                         buffer.write(u32(0))
-            attachment_index_start = buffer.tell()
-            buffer.seek(116 + len(self.commands) * 24 + 20)
-            for i in range(len(self.nodes)):
-                buffer.write(u32(bodies[i]))
-                buffer.skip(56)
-        else:
-            attachment_index_start = buffer.tell()
+        attachment_index_start = buffer.tell()
+
+        if self.nodes:
+            base_attach = 0
+            buffer.seek(116 + 24 * len(self.commands))
+            for node in self.nodes:
+                buffer.write(u16(Node_Type[node["Node Type"]].value))
+                buffer.write(u16(node["Node Index"]))
+                buffer.write(u16(attach_counts[node["Node Index"]]))
+                flags = 0
+                if "Flags" in node:
+                    if "Is Precondition Node" in node["Flags"]:
+                        flags = flags | 1
+                    if "Is External AINB" in node["Flags"]:
+                        flags = flags | 2
+                    if "Is Resident Node" in node["Flags"]:
+                        flags = flags | 4
+                buffer.write(u8(flags) + padding())
+                buffer.write(u32(buffer._string_refs[node["Name"]]))
+                buffer.write(u32(mmh3.hash(node["Name"], signed=False)))
+                buffer.write(u32(0))
+                buffer.write(u32(bodies[node["Node Index"]])) # Write offset later
+                buffer.write(u16(node["EXB Field Count"]))
+                buffer.write(u16(node["EXB Value Size"]))
+                buffer.write(u16(multi_counts[node["Node Index"]]))
+                buffer.write(u16(0))
+                buffer.write(u32(base_attach))
+                buffer.write(u16(node["Base Precondition Node"]))
+                buffer.write(u16(precon_counts[node["Node Index"]]))
+                buffer.write(u16(0)) # 0x58 Section Offset (Unused in TotK)
+                buffer.write(u16(0))
+                parts = node["GUID"].split('-')
+                parts = [int(i, 16) for i in parts]
+                buffer.write(u32(parts[0]))
+                buffer.write(u16(parts[1]))
+                buffer.write(u16(parts[2]))
+                buffer.write(u16(parts[3]))
+                parts[4] = hex(parts[4])[2:]
+                while len(parts[4]) < 12:
+                    parts[4] = "0" + parts[4]
+                buffer.write(byte_custom(bytes.fromhex(parts[4]), 6))
+                base_attach += attach_counts[node["Node Index"]]
+        
         buffer.seek(attachment_index_start)
         if attachments:
             for entry in attachment_indices:
                 buffer.write(u32(entry))
             attachment_start = buffer.tell()
+            print(hex(attachment_start))
             for attachment in attachments:
                 buffer.add_string(attachment["Name"])
                 buffer.write(u32(buffer._string_refs[attachment["Name"]]))
-                buffer.write(u32(attachment_start + 16 * attachments.index(attachment)))
+                buffer.write(u32(attachment_start + 16 * len(attachments) + 100 * attachments.index(attachment)))
                 buffer.write(u16(attachment["EXB Field Count"]))
                 buffer.write(u16(attachment["EXB Value Size"]))
-                buffer.write(u32(int(attachment["Name Hash"][2:], 16)))
+                buffer.write(u32(mmh3.hash(attachment["Name"], signed=False)))
             for attachment in attachments:
                 if "Debug" in attachment["Name"]:
                     buffer.write(u32(1))
