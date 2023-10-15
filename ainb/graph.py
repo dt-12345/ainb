@@ -123,6 +123,8 @@ def graph(filepath): # Input can be .ainb, .json, or .yml/.yaml
             dot.attr('node', shape='box')
             for node in data["Nodes"]:
                 iter_node(node["Node Index"])
+    else:
+        print("File has no nodes to graph")
 
     dot.render(data["Info"]["Filename"], view=True)
 
