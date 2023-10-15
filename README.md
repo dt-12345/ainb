@@ -4,11 +4,31 @@ Collection of simple Python scripts to work with AINB files from recent Nintendo
 
 Commands to convert between AINB and JSON/YAML are found in converter.py
 
-Basic graph creation command is in graph.py (outputs as .svg, requires Graphviz installation)
+Basic graph creation command is in graph.py (warning: graphs may be large)
 
+## Usage
 To use, clone the respository and use the commands in commands.py/graph.py - make sure to have Python 3 installed (not sure what the minimum version is, this was tested on 3.11.6)
+
 For node graph generation, make sure to install Graphviz and the graphviz Python package
 
+Arguments can be passed all as once as shown below or one-by-one via prompts
+
+### Examples
+
+```powershell
+python ainb.py ainb_to_json <path_to_ainb> # Converts provided AINB file to JSON
+
+python graph.py graph <path_to_ainb> true # Creates recursive node graph of file and nested files 
+```
+
+### Dependencies
++ mmh3
++ PyYAML
++ graphviz (node graph generation only)
+
+## Notes
 Reserialization is not byte-perfect and unused strings are removed, potentially leading to some string offsets being different from the original file - however, the game should still run without issue so editing the JSON/YAML then converting is OK
 
 Still in testing so there may be bugs (let me know if there are any issues)
+
+Special thanks to Watertoon for their help reversing the format
