@@ -47,18 +47,19 @@ def graph(filepath, recurse=False, parent_id=None, dot=None): # Input can be .ai
                     dot.edge(origin_id, id, label=lbl)
                     edge_list.append((origin_id, id, lbl))
             already_seen.append(node_index)
-            if "Flags" in data["Nodes"][node_index]:
-                if "Is External AINB" in data["Nodes"][node_index]["Flags"]:
-                    extensions = [".json", ".ainb", ".yml", ".yaml"]
-                    for extension in extensions:
-                        try:
-                            filepath = data["Nodes"][node_index]["Name"] + extension
-                            graph(filepath, True, id, dot)
-                            break
-                        except FileNotFoundError:
-                            if extension == ".yaml":
-                                print("Unable to find " + data["Nodes"][node_index]["Name"])
-                            pass
+            if recurse == True:
+                if "Flags" in data["Nodes"][node_index]:
+                    if "Is External AINB" in data["Nodes"][node_index]["Flags"]:
+                        extensions = [".json", ".ainb", ".yml", ".yaml"]
+                        for extension in extensions:
+                            try:
+                                filepath = data["Nodes"][node_index]["Name"] + extension
+                                graph(filepath, True, id, dot)
+                                break
+                            except FileNotFoundError:
+                                if extension == ".yaml":
+                                    print("Unable to find " + data["Nodes"][node_index]["Name"])
+                                pass
             if "Precondition Nodes" in data["Nodes"][node_index]:
                 for node in data["Nodes"][node_index]["Precondition Nodes"]:
                     iter_node(node, id, "Precondition", already_seen, precon=True)
