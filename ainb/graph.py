@@ -10,8 +10,9 @@ import converter
 import os
 import sys
 
-def graph(filepath): # Input can be .ainb, .json, or .yml/.yaml
-    print("Converting... (May take a moment for larger files)")
+def graph(filepath, recurse=False, parent_id=None, dot=None): # Input can be .ainb, .json, or .yml/.yaml
+    if parent_id == None:
+        print("Converting... (May take a moment for larger files)")
 
     if ".json" in filepath:
         with open(filepath, 'r', encoding='utf-8') as file:
@@ -25,13 +26,15 @@ def graph(filepath): # Input can be .ainb, .json, or .yml/.yaml
         with open(filepath, 'r', encoding='utf-8') as file:
             data = json.load(file)
 
-    dot = graphviz.Digraph(data["Info"]["Filename"], node_attr={'shape' : 'diamond'})
-    dot.format = 'svg'
+    if dot == None:
+        dot = graphviz.Digraph(data["Info"]["Filename"], node_attr={'shape' : 'diamond'})
+        dot.format = 'svg'
 
     id_list = {}
     edge_list = []
 
     def iter_node(node_index, origin_id=None, lbl=None, already_seen=[], precon=False):
+        dot.attr('node', shape='box')
         if node_index not in already_seen and node_index < len(data["Nodes"]):
             id = str(random.random())
             id_list[node_index] = id
@@ -44,6 +47,18 @@ def graph(filepath): # Input can be .ainb, .json, or .yml/.yaml
                     dot.edge(origin_id, id, label=lbl)
                     edge_list.append((origin_id, id, lbl))
             already_seen.append(node_index)
+            if "Flags" in data["Nodes"][node_index]:
+                if "Is External AINB" in data["Nodes"][node_index]["Flags"]:
+                    extensions = [".json", ".ainb", ".yml", ".yaml"]
+                    for extension in extensions:
+                        try:
+                            filepath = data["Nodes"][node_index]["Name"] + extension
+                            graph(filepath, True, id, dot)
+                            break
+                        except FileNotFoundError:
+                            if extension == ".yaml":
+                                print("Unable to find " + data["Nodes"][node_index]["Name"])
+                            pass
             if "Precondition Nodes" in data["Nodes"][node_index]:
                 for node in data["Nodes"][node_index]["Precondition Nodes"]:
                     iter_node(node, id, "Precondition", already_seen, precon=True)
@@ -110,27 +125,39 @@ def graph(filepath): # Input can be .ainb, .json, or .yml/.yaml
             return id
 
     if "Nodes" in data:
-        if data["Info"]["File Category"] != "Logic":
+        if data["Info"]["File Category"] != "Logic" and "Commands" in data:
             for command in data["Commands"]:
+                dot.attr('node', shape='diamond')
                 cmd_id = str(random.random())
                 dot.node(cmd_id, json.dumps(command, indent=4)[1:-2] + "\n\n", color='blue')
-                dot.attr('node', shape='box')
+                if recurse and parent_id != None:
+                    dot.edge(parent_id, cmd_id)
                 iter_node(command["Left Node Index"], cmd_id)
                 if command["Right Node Index"] >= 0:
                     iter_node(command["Right Node Index"], cmd_id)
-                dot.attr('node', shape='diamond')
         else:
-            dot.attr('node', shape='box')
             for node in data["Nodes"]:
-                iter_node(node["Node Index"])
+                node_id = iter_node(node["Node Index"])
+                if recurse and node["Node Index"] == 0 and parent_id != None:
+                    dot.edge(parent_id, node_id)
     else:
-        print("File has no nodes to graph")
+        print("File has no nodes to graph: " + filepath)
 
-    dot.render(data["Info"]["Filename"], view=True)
+    if parent_id == None:
+        print("Rendering... (may take a while for recursive graphs)")
+        dot.render(data["Info"]["Filename"], view=True)
+        print("Finished")
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        globals()[sys.argv[1]](sys.argv[2])
+        if len(sys.argv) == 4:
+            globals()[sys.argv[1]](sys.argv[2], sys.argv[3])
+        else:
+            globals()[sys.argv[1]](sys.argv[2])
     else:
         filepath = input("Enter filepath: ")
-        graph(filepath)
+        recurse = input("Include graphs of embedded AINB files in graph (will increase rendering time) Y/N: ")
+        if recurse.lower() not in ["y", "yes"]:
+            graph(filepath)
+        else:
+            graph(filepath, recurse=True)
