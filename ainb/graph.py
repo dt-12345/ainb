@@ -10,7 +10,10 @@ import converter
 import os
 import sys
 
-def graph(filepath, recurse=False, parent_id=None, dot=None): # Input can be .ainb, .json, or .yml/.yaml
+# Input can be .ainb, .json, or .yml/.yaml
+# Recurse controls whether or not to include embedded AINB files in the graph
+# The other arguments are passed automatically when recursively iterating
+def graph(filepath, recurse=False, parent_id=None, dot=None):
     if parent_id == None:
         print("Converting... (May take a moment for larger files)")
 
@@ -47,7 +50,7 @@ def graph(filepath, recurse=False, parent_id=None, dot=None): # Input can be .ai
                     dot.edge(origin_id, id, label=lbl)
                     edge_list.append((origin_id, id, lbl))
             already_seen.append(node_index)
-            if recurse == True:
+            if recurse:
                 if "Flags" in data["Nodes"][node_index]:
                     if "Is External AINB" in data["Nodes"][node_index]["Flags"]:
                         extensions = [".json", ".ainb", ".yml", ".yaml"]
@@ -152,6 +155,10 @@ def graph(filepath, recurse=False, parent_id=None, dot=None): # Input can be .ai
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         if len(sys.argv) == 4:
+            if sys.argv[3].lower() == "true":
+                sys.argv[3] = True
+            else:
+                sys.argv[3] = False
             globals()[sys.argv[1]](sys.argv[2], sys.argv[3])
         else:
             globals()[sys.argv[1]](sys.argv[2])
