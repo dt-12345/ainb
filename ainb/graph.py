@@ -113,7 +113,7 @@ def graph(filepath): # Input can be .ainb, .json, or .yml/.yaml
         if data["Info"]["File Category"] != "Logic":
             for command in data["Commands"]:
                 cmd_id = str(random.random())
-                dot.node(cmd_id, json.dumps(command, indent=4)[1:-2] + "\n\n")
+                dot.node(cmd_id, json.dumps(command, indent=4)[1:-2] + "\n\n", color='blue')
                 dot.attr('node', shape='box')
                 iter_node(command["Left Node Index"], cmd_id)
                 if command["Right Node Index"] >= 0:
