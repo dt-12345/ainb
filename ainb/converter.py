@@ -32,4 +32,14 @@ def yaml_to_ainb(filepath):
         file.ToBytes(file, outfile)
         
 if __name__ == '__main__':
-    globals()[sys.argv[1]](sys.argv[2])
+    if len(sys.argv) > 1:
+        globals()[sys.argv[1]](sys.argv[2])
+    else:
+        sys.argv.append(input("Input command name: "))
+        if sys.argv[1].lower() in ["h", "help"]:
+            print("Valid Commands: ainb_to_json, json_to_ainb, ainb_to_yaml, yaml_to_ainb")
+            sys.argv[1] = input("Input command name: ")
+        elif sys.argv[1] not in ["ainb_to_json", "json_to_ainb", "ainb_to_yaml", "yaml_to_ainb"]:
+            raise ValueError("Invalid Command")
+        sys.argv.append(input("Input filepath: "))
+        globals()[sys.argv[1]](sys.argv[2])

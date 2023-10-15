@@ -129,4 +129,8 @@ def graph(filepath): # Input can be .ainb, .json, or .yml/.yaml
     dot.render(data["Info"]["Filename"], view=True)
 
 if __name__ == '__main__':
-    globals()[sys.argv[1]](sys.argv[2])
+    if len(sys.argv) > 1:
+        globals()[sys.argv[1]](sys.argv[2])
+    else:
+        filepath = input("Enter filepath: ")
+        graph(filepath)
