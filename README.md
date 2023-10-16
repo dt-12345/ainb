@@ -9,7 +9,7 @@ Basic graph creation command is in graph.py (warning: graphs may be large)
 ## Usage
 To use, clone the respository and use the commands in commands.py/graph.py - make sure to have Python 3 installed (not sure what the minimum version is, this was tested on 3.11.6)
 
-For node graph generation, make sure to install Graphviz and the graphviz Python package
+For node graph generation, make sure to install [Graphviz](https://www.graphviz.org/download/) and the graphviz Python package
 
 Arguments can be passed all as once as shown below or one-by-one via prompts
 
@@ -25,6 +25,7 @@ python graph.py graph <path_to_ainb> true # Creates recursive node graph of file
 + mmh3
 + PyYAML
 + graphviz (node graph generation only)
++ Graphviz (different from the Python package)
 
 ## File Format Overview
 
