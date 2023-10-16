@@ -15,7 +15,7 @@ import sys
 # The other arguments are passed automatically when recursively iterating
 def graph(filepath, recurse=False, parent_id=None, dot=None):
     if parent_id == None:
-        print("Converting... (May take a moment for larger files)")
+        print("Converting... (may take a moment for larger files)")
 
     if ".json" in filepath:
         with open(filepath, 'r', encoding='utf-8') as file:
@@ -159,13 +159,31 @@ if __name__ == '__main__':
                 sys.argv[3] = True
             else:
                 sys.argv[3] = False
-            globals()[sys.argv[1]](sys.argv[2], sys.argv[3])
+            if os.path.isdir(sys.argv[2]):
+                files = [i for i in os.listdir(sys.argv[2]) if os.path.splitext(i)[1] in [".ainb", ".json", ".yml", ".yaml"]]
+                for file in files:
+                    globals()[sys.argv[1]](os.path.join(sys.argv[2], file), sys.argv[3])
+            else:
+                globals()[sys.argv[1]](sys.argv[2], sys.argv[3])
         else:
-            globals()[sys.argv[1]](sys.argv[2])
+            if os.path.isdir(sys.argv[2]):
+                files = [i for i in os.listdir(sys.argv[2]) if os.path.splitext(i)[1] in [".ainb", ".json", ".yml", ".yaml"]]
+                for file in files:
+                    globals()[sys.argv[1]](os.path.join(sys.argv[2], file))
+            else:
+                globals()[sys.argv[1]](sys.argv[2])
     else:
         filepath = input("Enter filepath: ")
         recurse = input("Include graphs of embedded AINB files in graph (will increase rendering time) Y/N: ")
-        if recurse.lower() not in ["y", "yes"]:
-            graph(filepath)
+        if os.path.isdir(filepath):
+            files = [i for i in os.listdir(filepath) if os.path.splitext(i)[1] in [".ainb", ".json", ".yml", ".yaml"]]
+            for file in files:
+                if recurse.lower() not in ["y", "yes"]:
+                    graph(os.path.join(filepath, file))
+                else:
+                    graph(os.path.join(filepath, file), recurse=True)
         else:
-            graph(filepath, recurse=True)
+            if recurse.lower() not in ["y", "yes"]:
+                graph(filepath)
+            else:
+                graph(filepath, recurse=True)

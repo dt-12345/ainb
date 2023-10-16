@@ -2,6 +2,7 @@ import json
 import yaml
 import ainb
 import sys
+import os
 
 def ainb_to_json(filepath): # Converts input AINB file to JSON
     with open(filepath, 'rb') as file:
@@ -33,7 +34,17 @@ def yaml_to_ainb(filepath): # Converts input YAML file to AINB
         
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        globals()[sys.argv[1]](sys.argv[2])
+        if os.path.isdir(sys.argv[2]):
+            if sys.argv[1] in ["ainb_to_json", "ainb_to_yaml"]:
+                files = [i for i in os.listdir(sys.argv[2]) if os.path.splitext(i)[1] == ".ainb"]
+            elif sys.argv[1] == "json_to_ainb":
+                files = [i for i in os.listdir(sys.argv[2]) if os.path.splitext(i)[1] == ".json"]
+            elif sys.argv[1] == "yaml_to_ainb":
+                files = [i for i in os.listdir(sys.argv[2]) if os.path.splitext(i)[1] in [".yml", ".yaml"]]
+            for file in files:
+                globals()[sys.argv[1]](os.path.join(sys.argv[2], file))
+        else:
+            globals()[sys.argv[1]](sys.argv[2])
     else:
         sys.argv.append(input("Input command name: "))
         if sys.argv[1].lower() in ["h", "help"]:
@@ -42,7 +53,27 @@ if __name__ == '__main__':
         elif sys.argv[1] not in ["ainb_to_json", "json_to_ainb", "ainb_to_yaml", "yaml_to_ainb"]:
             raise ValueError("Invalid Command")
         if len(sys.argv) > 2:
-            globals()[sys.argv[1]](sys.argv[2])
+            if os.path.isdir(sys.argv[2]):
+                if sys.argv[1] in ["ainb_to_json", "ainb_to_yaml"]:
+                    files = [i for i in os.listdir(sys.argv[2]) if os.path.splitext(i)[1] == ".ainb"]
+                elif sys.argv[1] == "json_to_ainb":
+                    files = [i for i in os.listdir(sys.argv[2]) if os.path.splitext(i)[1] == ".json"]
+                elif sys.argv[1] == "yaml_to_ainb":
+                    files = [i for i in os.listdir(sys.argv[2]) if os.path.splitext(i)[1] in [".yml", ".yaml"]]
+                for file in files:
+                    globals()[sys.argv[1]](os.path.join(sys.argv[2], file))
+            else:
+                globals()[sys.argv[1]](sys.argv[2])
         else:
             sys.argv.append(input("Input filepath: "))
-            globals()[sys.argv[1]](sys.argv[2])
+            if os.path.isdir(sys.argv[2]):
+                if sys.argv[1] in ["ainb_to_json", "ainb_to_yaml"]:
+                    files = [i for i in os.listdir(sys.argv[2]) if os.path.splitext(i)[1] == ".ainb"]
+                elif sys.argv[1] == "json_to_ainb":
+                    files = [i for i in os.listdir(sys.argv[2]) if os.path.splitext(i)[1] == ".json"]
+                elif sys.argv[1] == "yaml_to_ainb":
+                    files = [i for i in os.listdir(sys.argv[2]) if os.path.splitext(i)[1] in [".yml", ".yaml"]]
+                for file in files:
+                    globals()[sys.argv[1]](os.path.join(sys.argv[2], file))
+            else:
+                globals()[sys.argv[1]](sys.argv[2])
