@@ -16,7 +16,7 @@ Arguments can be passed all as once as shown below or one-by-one via prompts
 ### Examples
 
 ```powershell
-python ainb.py ainb_to_json <path_to_ainb> # Converts provided AINB file to JSON
+python converter.py ainb_to_json <path_to_ainb> # Converts provided AINB file to JSON
 
 python graph.py graph <path_to_ainb> true # Creates recursive node graph of file and nested files 
 ```
