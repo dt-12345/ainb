@@ -5,7 +5,7 @@ Requires Graphviz installation and the graphviz Python package (pip install grap
 import graphviz
 import json
 import yaml
-import random
+import uuid
 import converter
 import os
 import sys
@@ -39,7 +39,7 @@ def graph(filepath, recurse=False, parent_id=None, dot=None):
     def iter_node(node_index, origin_id=None, lbl=None, already_seen=[], precon=False):
         dot.attr('node', shape='box')
         if node_index not in already_seen and node_index < len(data["Nodes"]):
-            id = str(random.random())
+            id = str(uuid.uuid4())
             id_list[node_index] = id
             dot.node(id, json.dumps(data["Nodes"][node_index], indent=4)[1:-2].replace('\n', '\l') + "\l\n")
             if origin_id != None:
@@ -117,7 +117,7 @@ def graph(filepath, recurse=False, parent_id=None, dot=None):
                         dot.edge(origin_id, id_list[node_index], label=lbl)
             return id_list[node_index]
         else:
-            id = str(random.random())
+            id = str(uuid.uuid4())
             dot.node(id, "Invalid Node\n")
             if origin_id != None: # Not sure this is even possible, but just in case
                 if precon:
@@ -132,7 +132,7 @@ def graph(filepath, recurse=False, parent_id=None, dot=None):
         if data["Info"]["File Category"] != "Logic" and "Commands" in data:
             for command in data["Commands"]:
                 dot.attr('node', shape='diamond')
-                cmd_id = str(random.random())
+                cmd_id = str(uuid.uuid4())
                 dot.node(cmd_id, json.dumps(command, indent=4)[1:-2] + "\n\n", color='blue')
                 if recurse and parent_id != None:
                     dot.edge(parent_id, cmd_id)
