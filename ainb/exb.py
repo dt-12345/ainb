@@ -35,8 +35,9 @@ class Command(Enum):
 
 class Type(Enum):
     none                = 0
+    immediate_or_user   = 1
     bool                = 2
-    u32                 = 3
+    s32                 = 3
     f32                 = 4
     string              = 5
     vec3f               = 6
@@ -108,17 +109,14 @@ class EXB:
                 self.instructions.append(self.ReadInstruction())
             
             # Match instructions to commands
+            instruction_index = 0
             for command in self.commands:
                 command["Instructions"] = []
                 for i in range(command["Instruction Count"]):
-                    command["Instructions"].append(self.instructions[command["Instruction Base Index"] + i])
+                    command["Instructions"].append(self.instructions[instruction_index + i])
+                instruction_index += len(command["Instructions"])
+                del command["Instruction Count"]
         else:
-            self.magic = data["Info"]["Magic"]
-            self.version = data["Info"]["Version"]
-            self.static_size = data["Info"]["Static Memory Size"]
-            self.field_entry_count = data["Info"]["EXB Field Entry Count"]
-            self.scratch_32_size = data["Info"]["32-bit Scratch Memory Size"]
-            self.scratch_64_size = data["Info"]["64-bit Scratch Memory Size"]
             self.commands = list(dict(sorted(functions.items())).values())
             self.instructions = []
             for entry in self.commands:
@@ -128,14 +126,6 @@ class EXB:
                             self.instructions.append(instruction)
 
         self.exb_section = {
-            "Info" : {
-                "Magic" : self.magic,
-                "Version" : self.version,
-                "Static Memory Size" : self.static_size,
-                "EXB Field Entry Count" : self.field_entry_count,
-                "32-bit Scratch Memory Size" : self.scratch_32_size,
-                "64-bit Scratch Memory Size" : self.scratch_64_size
-            },
             "Commands" : self.commands
         }
 
@@ -145,11 +135,13 @@ class EXB:
         info["Pre-Entry Static Memory Usage"] = self.stream.read_u32()
         info["Instruction Base Index"] = self.stream.read_u32()
         info["Instruction Count"] = self.stream.read_u32()
-        info["Unknown 1"] = self.stream.read_u32()
+        info["Static Memory Size"] = self.stream.read_u32()
         info["32-bit Scratch Memory Size"] = self.stream.read_u16()
         info["64-bit Scratch Memory Size"] = self.stream.read_u16()
-        info["Unknown 2"] = self.stream.read_u16()
-        info["Input Data Type Enum"] = self.stream.read_u16()
+        info["Output Data Type"] = Type(self.stream.read_u16()).name
+        info["Input Data Type"] = Type(self.stream.read_u16()).name
+        del info["Output Data Type"], info["Input Data Type"], info["Instruction Base Index"]
+        del info["32-bit Scratch Memory Size"], info["64-bit Scratch Memory Size"], info["Static Memory Size"]
         return info
     
     def ReadInstruction(self):
@@ -170,7 +162,7 @@ class EXB:
                     self.stream.seek(self.parameter_region_offset + instruction[f"{i} Index/Value"])
                     if instruction["Data Type"] == "bool":
                         instruction[f"{i} Value"] = bool(self.stream.read_u32())
-                    elif instruction["Data Type"] == "u32":
+                    elif instruction["Data Type"] == "s32":
                         instruction[f"{i} Value"] = self.stream.read_u32()
                     elif instruction["Data Type"] == "f32":
                         instruction[f"{i} Value"] = self.stream.read_f32()
@@ -192,27 +184,80 @@ class EXB:
             instruction["Signature"] = self.string_pool.read_string(self.signature_offsets[self.stream.read_u32()])
             return instruction
         
-    def ToBytes(self, exb, dest, offset=0): # exb is an EXB object
+    def ToBytes(self, exb, dest, offset=0, exb_instance_count=0): # exb is an EXB object
         buffer = dest
         buffer.seek(offset)
         buffer.write(b'EXB ') # Magic
         buffer.write(b'\x02\x00\x00\x00')
-        buffer.write(u32(exb.static_size))
-        buffer.write(u32(exb.field_entry_count))
-        buffer.write(u32(exb.scratch_32_size))
-        buffer.write(u32(exb.scratch_64_size))
-        buffer.write(u32(44)) # Command info is always right after header
-        buffer.skip(16) # Addresses will be written to later
+        buffer.skip(36) # Addresses will be written to later
         buffer.write(u32(len(exb.commands)))
+        instruction_index = 0
+        max_static = 0
+        max_32 = 0
+        max_64 = 0
         for command in exb.commands:
-            for key in command:
-                if key != "Instructions" and " Value" not in key:
-                    if key in ["32-bit Scratch Memory Size", "64-bit Scratch Memory Size", "Unknown 2", "Input Data Type Enum"]:
-                        buffer.write(u16(command[key]))
-                    elif key == "Base Index Pre-Command Entry":
-                        buffer.write(s32(command[key]))
+            buffer.write(s32(command["Base Index Pre-Command Entry"]))
+            buffer.write(u32(command["Pre-Entry Static Memory Usage"]))
+            buffer.write(u32(instruction_index))
+            buffer.write(u32(len(command["Instructions"])))
+            instruction_index += len(command["Instructions"])
+            static_size = 0
+            for instruction in command["Instructions"]:
+                if "LHS Source" in instruction or "RHS Source" in instruction:
+                    if instruction["Data Type"] == "vec3f":
+                        size = 12
                     else:
-                        buffer.write(u32(command[key]))
+                        size = 4
+                    if instruction["LHS Source"] == "StaticMem":
+                        static_size = max(static_size, instruction["LHS Index/Value"] + size)
+                    if instruction["RHS Source"] == "StaticMem":
+                        static_size = max(static_size, instruction["RHS Index/Value"] + size)
+                elif "Static Memory Index" in instruction:
+                    if instruction["Data Type"] == "vec3f":
+                        size = 12
+                    else:
+                        size = 4
+                    static_size = max(static_size, instruction["Static Memory Index"] + size)
+            max_static = max(max_static, static_size)
+            buffer.write(u32(static_size))
+            scratch32_size = 0
+            for instruction in command["Instructions"]:
+                if "LHS Source" in instruction or "RHS Source" in instruction:
+                    if instruction["Data Type"] == "vec3f":
+                        size = 12
+                    else:
+                        size = 4
+                    if instruction["LHS Source"] == "Scratch32":
+                        scratch32_size = max(scratch32_size, instruction["LHS Index/Value"] + size)
+                    if instruction["RHS Source"] == "Scratch32":
+                        scratch32_size = max(scratch32_size, instruction["RHS Index/Value"] + size)
+            max_32 = max(max_32, scratch32_size)
+            buffer.write(u16(scratch32_size))
+            scratch64_size = 0
+            for instruction in command["Instructions"]:
+                if "LHS Source" in instruction or "RHS Source" in instruction:
+                    if instruction["Data Type"] == "vec3f":
+                        size = 12
+                    else:
+                        size = 4
+                    if instruction["LHS Source"] == "Scratch32":
+                        scratch64_size = max(scratch64_size, instruction["LHS Index/Value"] + size)
+                    if instruction["RHS Source"] == "Scratch32":
+                        scratch64_size = max(scratch64_size, instruction["RHS Index/Value"] + size)
+            max_64 = max(max_64, scratch64_size)
+            buffer.write(u16(scratch64_size))
+            if "ParamTbl" in command["Instructions"][-2]["LHS Source"] or command["Instructions"][-2]["LHS Source"] == "Output":
+                buffer.write(u16(Type[command["Instructions"][-2]["Data Type"]].value))
+            elif "Jump" in command["Instructions"][-2]["LHS Source"]:
+                buffer.write(u16(0))
+            else:
+                buffer.write(u16(1))
+            if "ParamTbl" in command["Instructions"][0]["RHS Source"] or command["Instructions"][0]["RHS Source"] == "Input":
+                buffer.write(u16(Type[command["Instructions"][0]["Data Type"]].value))
+            elif "Jump" in command["Instructions"][0]["LHS Source"]:
+                buffer.write(u16(0))
+            else:
+                buffer.write(u16(1))
         command_start = buffer.tell()
         buffer.write(u32(len(exb.instructions)))
         signature_offsets = []
@@ -253,7 +298,7 @@ class EXB:
                                 buffer.write(f32(value))
                                 if buffer.tell() > string_start:
                                     string_start = buffer.tell()
-                        elif instruction["Data Type"] == "u32":
+                        elif instruction["Data Type"] == "s32":
                             buffer.write(u32(instruction[key]))
                             if buffer.tell() > string_start:
                                 string_start = buffer.tell()
@@ -274,7 +319,12 @@ class EXB:
         buffer.seek(string_start)
         buffer.write(buffer._strings_exb)
         end = buffer.tell()
-        buffer.seek(offset + 28)
+        buffer.seek(offset + 8)
+        buffer.write(u32(max_static))
+        buffer.write(u32(exb_instance_count))
+        buffer.write(u32(max_32))
+        buffer.write(u32(max_64))
+        buffer.write(u32(44)) # Command info is always right after header
         buffer.write(u32(command_start - offset))
         buffer.write(u32(sig_start - offset))
         buffer.write(u32(param_start - offset))
