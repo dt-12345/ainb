@@ -2,7 +2,10 @@ from exb import EXB
 from utils import *
 from enum import Enum
 import json
-import mmh3
+try:
+    import mmh3
+except ImportError:
+    raise ImportError("DID YOU EVEN TRY TO READ THE INSTRUCTIONS BEFORE YOU DID THIS? GO BACK TO THE GITHUB README AND LEARN TO READ :P")
 
 # Enums and stuff
 class Node_Type(Enum):
@@ -34,6 +37,7 @@ class Node_Type(Enum):
     Element_StateEnd               = 400
     Element_SplitTiming            = 500
 
+# User-Defined stores pointers to the corresponding structure/class
 type_standard = ["int", "bool", "float", "string", "vec3f", "userdefined"] # Data type order
 
 type_global = ["string", "int", "float", "bool", "vec3f", "userdefined"] # Data type order (global parameters)
@@ -49,14 +53,14 @@ class AINB:
             self.stream = ReadStream(data)
 
             self.functions = {}
-            self.exb_instances = 0
+            self.exb_instances = 0 # Track total number of EXB function calls
 
             # Header (0x74 Bytes)
             self.magic = self.stream.read(4).decode('utf-8')
             if self.magic != "AIB ": # Must be .ainb file with correct magic
                 raise Exception(f"Invalid magic {self.magic} - expected 'AIB '")
             self.version = self.stream.read_u32()
-            if self.version not in [0x404, 0x407]: # Must be version 4.4 or 4.7
+            if self.version not in [0x404, 0x407]: # Must be version 4.4 or 4.7 (4.4 isn't actually supported though)
                 raise Exception(f"Invalid version {hex(self.version)} - expected 0x404 (S3/NSS) or 0x407 (TotK)")
             
             self._filename_offset = self.stream.read_u32()
@@ -96,8 +100,8 @@ class AINB:
             self.file_hash_offset = self.stream.read_u32() # Hashed data is still a mystery, maybe CRC32 hash of file data?
 
             self.output_dict["Info"] = {
-                "Magic" : self.magic,
-                "Version" : hex(self.version),
+                "Magic" : self.magic, # Don't actually need to store this bc it's always the same
+                "Version" : hex(self.version), # Don't actually need to store this
                 "Filename" : self.filename,
                 "File Category" : self.file_category
             }
@@ -109,6 +113,8 @@ class AINB:
                 self.commands.append(self.Command())
             command_end = self.stream.tell()
             
+            # We don't parse the nodes yet because they depend on the other sections
+
             # Global Parameters (copied most from here on down from old code so hopefully it works fine)
             self.stream.seek(self.global_parameter_offset)
             self.global_params = self.GlobalParameters()
@@ -127,7 +133,7 @@ class AINB:
             for i in range(len(self.immediate_offsets)):
                 self.stream.seek(self.immediate_offsets[i])
                 self.immediate_parameters[type_standard[i]] = []
-                if i < 5:
+                if i < 5: # Pointer parameters end at the start of the next section
                     while self.stream.tell() < self.immediate_offsets[i+1]:
                         self.immediate_parameters[type_standard[i]].append(self.ImmediateParameter(type_standard[i]))
                 else:
@@ -190,7 +196,7 @@ class AINB:
             # Resident Update Array
             self.stream.seek(self.resident_update_offset)
             self.resident_update_array = []
-            if self.resident_update_offset != self.precondition_offset:
+            if self.resident_update_offset != self.precondition_offset: # Section doesn't exist if they're equal
                 offsets = [self.stream.read_u32()]
                 while self.stream.tell() < offsets[0]:
                     offsets.append(self.stream.read_u32())
@@ -207,7 +213,7 @@ class AINB:
                 end = self.embed_ainb_offset
             while self.stream.tell() < end:
                 self.precondition_nodes.append(self.stream.read_u16())
-                self.stream.skip(2)
+                self.stream.read_u16() # Unsure of the purpose of these two bytes
 
             # Entry Strings
             self.stream.seek(self.entry_string_offset)
@@ -227,7 +233,11 @@ class AINB:
                     self.nodes[entry["Node Index"]]["Entry String"] = entry
                     del self.nodes[entry["Node Index"]]["Entry String"]["Node Index"]
 
-            # Child Replacement
+            """
+            Child Replacement
+            These replacements/removals happen upon file initialization (mostly to remove debug nodes)
+            We keep the data bc there's no way to recover the replacement table otherwise
+            """
             self.stream.seek(self.child_replacement_offset)
             self.is_replaced = self.stream.read_u8() # Set at runtime, just ignore
             self.stream.skip(1)
@@ -303,6 +313,7 @@ class AINB:
             self.functions = {}
             self.exb_instances = 0
 
+            # Get all EXB functions in file
             if "Nodes" in data:
                 self.nodes = data["Nodes"]
                 for node in self.nodes:
@@ -393,7 +404,7 @@ class AINB:
         entry["Count"] = self.stream.read_u16()
         entry["Index"] = self.stream.read_u16()
         entry["Offset"] = self.stream.read_u16()
-        self.stream.skip(2)
+        self.stream.read_u16() # Unsure of the purpose of these two bytes
         return entry
 
     def GlobalEntry(self):
@@ -421,7 +432,7 @@ class AINB:
         if type == "vec3f":
             value = [self.stream.read_f32(), self.stream.read_f32(), self.stream.read_f32()]
         if type == "userdefined":
-            value = None
+            value = None # Default values are not stored
         return value
 
     def GlobalFileRef(self):
@@ -487,6 +498,7 @@ class AINB:
                 entry["Global Parameters Index"] = index
             if not(entry["Flags"]):
                 del entry["Flags"]
+        # User-Defined types don't have values stored
         if type == "string":
             entry["Value"] = self.string_pool.read_string(self.stream.read_u32())
         if type == "int":
@@ -640,25 +652,26 @@ class AINB:
                 entry["Flags"].append("Is External AINB")
             if flags & 0b100:
                 entry["Flags"].append("Is Resident Node")
-        self.stream.skip(1)
+        self.stream.read_u8()
         entry["Name"] = self.string_pool.read_string(self.stream.read_u32())
         entry["Name Hash"] = hex(self.stream.read_u32())
-        self.stream.skip(4)
+        self.stream.read_u32()
         entry["Parameters Offset"] = self.stream.read_u32()
         entry["EXB Function Count"] = self.stream.read_u16()
         entry["EXB Input/Output Size"] = self.stream.read_u16()
         del entry["EXB Function Count"], entry["EXB Input/Output Size"]
         entry["Multi-Param Count"] = self.stream.read_u16() # Unnecessary as node parameters will already be paired
-        self.stream.skip(2)
+        self.stream.read_u16()
         entry["Base Attachment Index"] = self.stream.read_u32()
         entry["Base Precondition Node"] = self.stream.read_u16()
         entry["Precondition Count"] = self.stream.read_u16()
-        self.stream.skip(4)
+        self.stream.read_u32()
         entry["GUID"] = self.GUID()
         if entry["Precondition Count"] > 0:
             entry["Precondition Nodes"] = []
             for i in range(entry["Precondition Count"]):
                 entry["Precondition Nodes"].append(self.precondition_nodes[entry["Base Precondition Node"] + i])
+        # This is all to get the function count and I know it could be way more efficient but it's late and I can't think
         if entry["Attachment Count"] > 0:
             entry["Attachments"] = []
             for i in range(entry["Attachment Count"]):
@@ -725,7 +738,7 @@ class AINB:
         if output_parameters:
             entry["Output Parameters"] = output_parameters
         self.exb_instances += exb_count
-        # Child Nodes (selectors may need some more work)
+        # Child Nodes
         counts = []
         indices = []
         for i in range(10):
@@ -763,10 +776,10 @@ class AINB:
                         else:
                             is_end = bool(offsets.index(offset) == len(offsets) - 1)
                             if entry["Node Type"] == "Element_S32Selector":
-                                index = self.stream.read_u16()
+                                index = self.stream.read_s16()
                                 flag = self.stream.read_u16() >> 15 # Is valid index
                                 if flag:
-                                    entry["Input"] = self.global_params["int"][index]
+                                    entry["Global Parameters Index"] = index
                                 if is_end:
                                     info["Condition"] = "Default"
                                 else:
@@ -775,10 +788,10 @@ class AINB:
                                 index = self.stream.read_u16()
                                 flag = self.stream.read_u16() >> 15 # Is valid index
                                 if flag:
-                                    entry["Input"] = self.global_params["float"][index]
+                                    entry["Global Parameters Index"] = index
                                 if not(is_end):
                                     info["Condition Min"] = self.stream.read_f32()
-                                    self.stream.skip(4)
+                                    self.stream.read_u32()
                                     info["Condition Max"] = self.stream.read_f32()
                                 else:
                                     info[self.string_pool.read_string(self.stream.read_u32())] = "Default"
@@ -786,7 +799,7 @@ class AINB:
                                 index = self.stream.read_u16()
                                 flag = self.stream.read_u16() >> 15 # Is valid index
                                 if flag:
-                                    entry["Input"] = self.global_params["string"][index]
+                                    entry["Global Parameters Index"] = index
                                 if is_end:
                                     info[self.string_pool.read_string(self.stream.read_u32())] = "Default"
                                 else:
@@ -807,17 +820,17 @@ class AINB:
     def ChildReplace(self):
         entry = {}
         entry["Type"] = self.stream.read_u8()
-        self.stream.skip(1)
+        self.stream.read_u8()
         entry["Node Index"] = self.stream.read_u16()
         if entry["Type"] in [0, 1]:
             entry["Child Index"] = self.stream.read_u16()
             if entry["Type"] == 1:
                 entry["Replacement Index"] = self.stream.read_u16()
             else:
-                self.stream.skip(2)
+                self.stream.read_u16()
         if entry["Type"] == 2:
             entry["Attachment Index"] = self.stream.read_u16()
-            self.stream.skip(2)
+            self.stream.read_u16()
         return entry
 
     def ToBytes(self, ainb, dest): # ainb is an AINB object
@@ -1659,7 +1672,7 @@ class AINB:
             buffer.write(u32(0))
         buffer.write(u32(child_replace_start))
         buffer.write(u32(precondition_start))
-        buffer.write(u32(resident_start)) # Always the same as the resident array offset, unused
+        buffer.write(u32(resident_start)) # 0x50 is always the same as the resident array offset, unused
         buffer.skip(8)
         buffer.write(u32(embed_ainb_start))
         buffer.skip(8)

@@ -1,5 +1,8 @@
 import json
-import yaml
+try:
+    import yaml
+except ImportError:
+    raise ImportError("DID YOU EVEN TRY TO READ THE INSTRUCTIONS BEFORE YOU DID THIS? GO BACK TO THE GITHUB README AND LEARN TO READ :P")
 import ainb
 import sys
 import os

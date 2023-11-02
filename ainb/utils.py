@@ -86,8 +86,8 @@ class WriteStream(Stream):
         self._string_list = [] # List of strings in file
         self._strings = b'' # String pool to write to file
         self._string_refs = {} # Maps strings to relative offsets
-        self._string_list_exb = [] # List of strings in file
-        self._strings_exb = b'' # String pool to write to file
+        self._string_list_exb = [] # List of strings in the EXB Section
+        self._strings_exb = b'' # String pool to write to the EXB section
         self._string_refs_exb = {} # Maps strings to relative offsets
 
     def add_string(self, string):

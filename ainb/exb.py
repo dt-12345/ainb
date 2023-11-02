@@ -34,8 +34,8 @@ class Command(Enum):
     Jump                = 29
 
 class Type(Enum):
-    none                = 0
-    immediate_or_user   = 1
+    none                = 0 # For operations that don't involve calculations (such as Jump)
+    immediate_or_user   = 1 # Only used for the input/output data type field in command info 
     bool                = 2
     s32                 = 3
     f32                 = 4
@@ -44,10 +44,10 @@ class Type(Enum):
 
 class Source(Enum):
     Imm                 = 0
-    ImmStr              = 1
+    ImmStr              = 1 # String reference
     StaticMem           = 2
     ParamTbl            = 3
-    ParamTblStr         = 4
+    ParamTblStr         = 4 # Index to string reference
     Output              = 5
     Input               = 6
     Scratch32           = 7
@@ -115,7 +115,7 @@ class EXB:
                 for i in range(command["Instruction Count"]):
                     command["Instructions"].append(self.instructions[instruction_index + i])
                 instruction_index += len(command["Instructions"])
-                del command["Instruction Count"]
+                del command["Instruction Count"] # Remove unnecessary fields from JSON
         else:
             self.commands = list(dict(sorted(functions.items())).values())
             self.instructions = []
@@ -140,6 +140,7 @@ class EXB:
         info["64-bit Scratch Memory Size"] = self.stream.read_u16()
         info["Output Data Type"] = Type(self.stream.read_u16()).name
         info["Input Data Type"] = Type(self.stream.read_u16()).name
+        # We don't need to store these fields
         del info["Output Data Type"], info["Input Data Type"], info["Instruction Base Index"]
         del info["32-bit Scratch Memory Size"], info["64-bit Scratch Memory Size"], info["Static Memory Size"]
         return info
@@ -189,8 +190,9 @@ class EXB:
         buffer.seek(offset)
         buffer.write(b'EXB ') # Magic
         buffer.write(b'\x02\x00\x00\x00')
-        buffer.skip(36) # Addresses will be written to later
+        buffer.skip(36) # Will be written at the end
         buffer.write(u32(len(exb.commands)))
+        # Temporary variables to track memory allocation sizes
         instruction_index = 0
         max_static = 0
         max_32 = 0
@@ -287,7 +289,7 @@ class EXB:
         for offset1 in signature_offsets:
             buffer.write(u32(offset1))
         param_start = buffer.tell()
-        string_start = param_start
+        string_start = param_start # We need to figure out where the string pool because we are jumping around
         for instruction in exb.instructions:
             for key in instruction:
                 if " Value" in key:
