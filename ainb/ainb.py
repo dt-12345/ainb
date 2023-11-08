@@ -307,7 +307,7 @@ class AINB:
             self.file_category = data["Info"]["File Category"]
 
             # Defaults
-            self.commands, self.ainb_array, self.nodes = [], [], []
+            self.commands, self.ainb_array, self.nodes, self.attachment_parameters = [], [], [], []
             self.global_params, self.exb, self.file_hashes = {}, {}, {}
             
             self.functions = {}
@@ -340,17 +340,19 @@ class AINB:
                                             self.functions[parameter["EXB Index"]] = parameter["Function"]
                                             self.exb_instances += 1
                     if "Attachments" in node:
-                        if "Parameters" in node["Attachments"]:
-                            for type in node["Attachments"]["Parameters"]:
-                                for entry in node["Attachments"]["Parameters"][type]:
-                                    if "Function" in entry:
-                                        self.functions[entry["EXB Index"]] = entry["Function"]
-                                        self.exb_instances += 1
-                                    if "Sources" in entry:
-                                        for parameter in entry["Sources"]:
-                                            if "Function" in parameter:
-                                                self.functions[parameter["EXB Index"]] = parameter["Function"]
-                                                self.exb_instances += 1
+                        for attachment in node["Attachments"]:
+                            self.attachment_parameters.append(attachment)
+                            if "Parameters" in attachment:
+                                for type in attachment["Parameters"]:
+                                    for entry in attachment["Parameters"][type]:
+                                        if "Function" in entry:
+                                            self.functions[entry["EXB Index"]] = entry["Function"]
+                                            self.exb_instances += 1
+                                        if "Sources" in entry:
+                                            for parameter in entry["Sources"]:
+                                                if "Function" in parameter:
+                                                    self.functions[parameter["EXB Index"]] = parameter["Function"]
+                                                    self.exb_instances += 1
 
             if "Commands" in data:
                 self.commands = data["Commands"]
