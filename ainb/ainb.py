@@ -222,17 +222,6 @@ class AINB:
             for i in range(count):
                 self.entry_strings.append(self.EntryStringEntry())
 
-            # Nodes - initialize all nodes and assign corresponding parameters
-            self.stream.seek(command_end)
-            self.nodes = []
-            for i in range(self.node_count):
-                self.nodes.append(self.Node())
-            if self.nodes:
-                # Match Entry Strings (purpose still unknown)
-                for entry in self.entry_strings:
-                    self.nodes[entry["Node Index"]]["Entry String"] = entry
-                    del self.nodes[entry["Node Index"]]["Entry String"]["Node Index"]
-
             """
             Child Replacement
             These replacements/removals happen upon file initialization (mostly to remove debug nodes)
@@ -295,10 +284,21 @@ class AINB:
                 i = len(self.functions)
                 self.exb.exb_section["Commands"] = [command for command in self.exb.exb_section["Commands"] if command not in list(self.functions.values())]
                 for command in self.exb.exb_section["Commands"]:
-                    self.functions[i] == command
+                    self.functions[i] = command
                     i += 1
                 if not self.exb.exb_section["Commands"]:
                     del self.exb.exb_section["Commands"]
+
+            # Nodes - initialize all nodes and assign corresponding parameters
+            self.stream.seek(command_end)
+            self.nodes = []
+            for i in range(self.node_count):
+                self.nodes.append(self.Node())
+            if self.nodes:
+                # Match Entry Strings (purpose still unknown)
+                for entry in self.entry_strings:
+                    self.nodes[entry["Node Index"]]["Entry String"] = entry
+                    del self.nodes[entry["Node Index"]]["Entry String"]["Node Index"]
             
         else:
             self.magic = data["Info"]["Magic"]
@@ -504,7 +504,7 @@ class AINB:
         if type == "string":
             entry["Value"] = self.string_pool.read_string(self.stream.read_u32())
         if type == "int":
-            entry["Value"] = self.stream.read_u32()
+            entry["Value"] = self.stream.read_s32()
         if type == "float":
             entry["Value"] = self.stream.read_f32()
         if type == "bool":
@@ -575,7 +575,7 @@ class AINB:
         if type == "string":
             entry["Value"] = self.string_pool.read_string(self.stream.read_u32())
         if type == "int":
-            entry["Value"] = self.stream.read_u32()
+            entry["Value"] = self.stream.read_s32()
         if type == "float":
             entry["Value"] = self.stream.read_f32()
         if type == "bool":
@@ -907,7 +907,7 @@ class AINB:
                         attach_exb_size = 0
                         if "Parameters" in attachment:
                             for type in attachment["Parameters"]:
-                                for entry in type:
+                                for entry in attachment["Parameters"][type]:
                                     if "Function" in entry:
                                         exb_count += 1
                                         attach_exb_count += 1
@@ -1450,11 +1450,9 @@ class AINB:
                                 flags += 0x80
                             if flag == "Set Pointer Flag Bit Zero":
                                 flags += 0x100
-                        buffer.write(u16(flags))
-                    else:
-                        buffer.write(u16(0))
+                    buffer.write(u16(flags))
                     if type == "int":
-                        buffer.write(u32(entry["Value"]))
+                        buffer.write(s32(entry["Value"]))
                     elif type == "bool":
                         buffer.write(u32(int(entry["Value"])))
                     elif type == "float":
@@ -1508,11 +1506,9 @@ class AINB:
                                 flags += 0x80
                             if flag == "Set Pointer Flag Bit Zero":
                                 flags += 0x100
-                        buffer.write(u16(flags))
-                    else:
-                        buffer.write(u16(0))
+                    buffer.write(u16(flags))
                     if type == "int":
-                        buffer.write(u32(entry["Value"]))
+                        buffer.write(s32(entry["Value"]))
                     elif type == "bool":
                         buffer.write(u32(int(entry["Value"])))
                     elif type == "float":
@@ -1558,9 +1554,7 @@ class AINB:
                             flags += 0x80
                         if flag == "Set Pointer Flag Bit Zero":
                             flags += 0x100
-                    buffer.write(u16(flags))
-                else:
-                    buffer.write(u16(0))
+                buffer.write(u16(flags))
         resident_start = buffer.tell()
         if residents:
             current = resident_start + len(residents) * 4

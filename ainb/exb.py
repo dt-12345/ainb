@@ -248,15 +248,15 @@ class EXB:
                         scratch64_size = max(scratch64_size, instruction["RHS Index/Value"] + size)
             max_64 = max(max_64, scratch64_size)
             buffer.write(u16(scratch64_size))
-            if "ParamTbl" in command["Instructions"][-2]["LHS Source"] or command["Instructions"][-2]["LHS Source"] == "Output":
+            if "LHS Source" in command["Instructions"][-2] and ("ParamTbl" in command["Instructions"][-2]["LHS Source"] or command["Instructions"][-2]["LHS Source"] == "Output"):
                 buffer.write(u16(Type[command["Instructions"][-2]["Data Type"]].value))
-            elif "Jump" in command["Instructions"][-2]["LHS Source"]:
+            elif "LHS Source" in command["Instructions"][-2] and "Jump" in command["Instructions"][-2]["LHS Source"]:
                 buffer.write(u16(0))
             else:
                 buffer.write(u16(1))
-            if "ParamTbl" in command["Instructions"][0]["RHS Source"] or command["Instructions"][0]["RHS Source"] == "Input":
+            if "RHS Source" in command["Instructions"][0] and ("ParamTbl" in command["Instructions"][0]["RHS Source"] or command["Instructions"][0]["RHS Source"] == "Input"):
                 buffer.write(u16(Type[command["Instructions"][0]["Data Type"]].value))
-            elif "Jump" in command["Instructions"][0]["LHS Source"]:
+            elif "RHS Source" in command["Instructions"][0] and "Jump" in command["Instructions"][0]["LHS Source"]:
                 buffer.write(u16(0))
             else:
                 buffer.write(u16(1))
