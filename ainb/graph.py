@@ -33,6 +33,12 @@ def graph(filepath, recurse=False, parent_id=None, dot=None):
         dot = graphviz.Digraph(data["Info"]["Filename"], node_attr={'shape' : 'diamond'})
         dot.format = 'svg'
 
+    precondition_nodes = []
+
+    for node in data["Nodes"]:
+        if "Flags" in node and "Is Precondition Node" in node["Flags"]:
+            precondition_nodes.append(node["Node Index"])
+
     id_list = {}
     edge_list = []
 
@@ -65,7 +71,7 @@ def graph(filepath, recurse=False, parent_id=None, dot=None):
                                 pass
             if "Precondition Nodes" in data["Nodes"][node_index]:
                 for node in data["Nodes"][node_index]["Precondition Nodes"]:
-                    iter_node(node, id, "Precondition", already_seen, precon=True)
+                    iter_node(precondition_nodes[node], id, "Precondition", already_seen, precon=True)
             if "Input Parameters" in data["Nodes"][node_index]:
                 for type in data["Nodes"][node_index]["Input Parameters"]:
                     for parameter in data["Nodes"][node_index]["Input Parameters"][type]:
