@@ -222,39 +222,6 @@ class AINB:
             for i in range(count):
                 self.entry_strings.append(self.EntryStringEntry())
 
-            """
-            Child Replacement
-            These replacements/removals happen upon file initialization (mostly to remove debug nodes)
-            We keep the data bc there's no way to recover the replacement table otherwise
-            """
-            self.stream.seek(self.child_replacement_offset)
-            self.is_replaced = self.stream.read_u8() # Set at runtime, just ignore
-            self.stream.skip(1)
-            count = self.stream.read_u16()
-            node_count = self.stream.read_s16() # = Node count - node removal count - 2 * replacement node count
-            attachment_count = self.stream.read_s16() # = Attachment count - attachment removal coutn
-            self.replacements = []
-            for i in range(count):
-                self.replacements.append(self.ChildReplace())
-            if self.replacements:
-                for replacement in self.replacements: # Don't actually replace the node, just leave a note
-                    if replacement["Type"] == 0:
-                        i = 0
-                        for type in self.nodes[replacement["Node Index"]]["Linked Nodes"]:
-                            for node in self.nodes[replacement["Node Index"]]["Linked Nodes"][type]:
-                                i += 0
-                                if i == replacement["Child Index"]:
-                                    node["Is Removed at Runtime"] = True
-                    if replacement["Type"] == 1:
-                        i = 0
-                        for type in self.nodes[replacement["Node Index"]]["Linked Nodes"]:
-                            for node in self.nodes[replacement["Node Index"]]["Linked Nodes"][type]:
-                                if i == replacement["Child Index"]:
-                                    node["Replacement Node Index"] = replacement["Replacement Index"]
-                                i += 1
-                    if replacement["Type"] == 2:
-                        self.nodes[replacement["Node Index"]]["Attachments"][replacement["Attachment Index"]]["Is Removed at Runtime"] = True
-
             # Embedded AINB
             self.stream.seek(self.embed_ainb_offset)
             count = self.stream.read_u32()
@@ -299,6 +266,39 @@ class AINB:
                 for entry in self.entry_strings:
                     self.nodes[entry["Node Index"]]["Entry String"] = entry
                     del self.nodes[entry["Node Index"]]["Entry String"]["Node Index"]
+
+            """
+            Child Replacement
+            These replacements/removals happen upon file initialization (mostly to remove debug nodes)
+            We keep the data bc there's no way to recover the replacement table otherwise
+            """
+            self.stream.seek(self.child_replacement_offset)
+            self.is_replaced = self.stream.read_u8() # Set at runtime, just ignore
+            self.stream.skip(1)
+            count = self.stream.read_u16()
+            node_count = self.stream.read_s16() # = Node count - node removal count - 2 * replacement node count
+            attachment_count = self.stream.read_s16() # = Attachment count - attachment removal coutn
+            self.replacements = []
+            for i in range(count):
+                self.replacements.append(self.ChildReplace())
+            if self.replacements:
+                for replacement in self.replacements: # Don't actually replace the node, just leave a note
+                    if replacement["Type"] == 0:
+                        i = 0
+                        for type in self.nodes[replacement["Node Index"]]["Linked Nodes"]:
+                            for node in self.nodes[replacement["Node Index"]]["Linked Nodes"][type]:
+                                i += 0
+                                if i == replacement["Child Index"]:
+                                    node["Is Removed at Runtime"] = True
+                    if replacement["Type"] == 1:
+                        i = 0
+                        for type in self.nodes[replacement["Node Index"]]["Linked Nodes"]:
+                            for node in self.nodes[replacement["Node Index"]]["Linked Nodes"][type]:
+                                if i == replacement["Child Index"]:
+                                    node["Replacement Node Index"] = replacement["Replacement Index"]
+                                i += 1
+                    if replacement["Type"] == 2:
+                        self.nodes[replacement["Node Index"]]["Attachments"][replacement["Attachment Index"]]["Is Removed at Runtime"] = True
             
         else:
             self.magic = data["Info"]["Magic"]
