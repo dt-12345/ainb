@@ -426,7 +426,7 @@ class AINB:
         if type == "int":
             value = self.stream.read_u32()
         if type == "bool":
-            value = bool(self.stream.read_u8())
+            value = bool(self.stream.read_u32())
         if type == "float":
             value = self.stream.read_f32()
         if type == "string":
@@ -1097,7 +1097,7 @@ class AINB:
                         buffer.write(f32(entry["Default Value"]))
                         size += 4
                     if type == "bool":
-                        buffer.write(u8(int(entry["Default Value"])))
+                        buffer.write(u32(int(entry["Default Value"])))
                         size += 4
                     if type == "vec3f":
                         buffer.write(f32(entry["Default Value"][0]))
