@@ -13,7 +13,7 @@ import sys
 # Input can be .ainb, .json, or .yml/.yaml
 # Recurse controls whether or not to include embedded AINB files in the graph
 # The other arguments are passed automatically when recursively iterating
-def graph(filepath, recurse=False, parent_id=None, dot=None):
+def graph(filepath, recurse=False, parent_id=None, dot=None, index=None):
     if parent_id == None:
         print("Converting... (may take a moment for larger files)")
 
@@ -134,24 +134,29 @@ def graph(filepath, recurse=False, parent_id=None, dot=None):
                         dot.edge(origin_id, id, label=lbl)
             return id
 
-    if "Nodes" in data:
-        if data["Info"]["File Category"] != "Logic" and "Commands" in data:
-            for command in data["Commands"]:
-                dot.attr('node', shape='diamond')
-                cmd_id = str(uuid.uuid4())
-                dot.node(cmd_id, json.dumps(command, indent=4)[1:-2] + "\n\n", color='blue')
-                if recurse and parent_id != None:
-                    dot.edge(parent_id, cmd_id)
-                iter_node(command["Left Node Index"], cmd_id)
-                if command["Right Node Index"] >= 0:
-                    iter_node(command["Right Node Index"], cmd_id)
+    if index == None:
+        if "Nodes" in data:
+            if data["Info"]["File Category"] != "Logic" and "Commands" in data:
+                for command in data["Commands"]:
+                    dot.attr('node', shape='diamond')
+                    cmd_id = str(uuid.uuid4())
+                    dot.node(cmd_id, json.dumps(command, indent=4)[1:-2] + "\n\n", color='blue')
+                    if recurse and parent_id != None:
+                        dot.edge(parent_id, cmd_id)
+                    iter_node(command["Left Node Index"], cmd_id)
+                    if command["Right Node Index"] >= 0:
+                        iter_node(command["Right Node Index"], cmd_id)
+            else:
+                for node in data["Nodes"]:
+                    node_id = iter_node(node["Node Index"])
+                    if recurse and node["Node Index"] == 0 and parent_id != None:
+                        dot.edge(parent_id, node_id)
         else:
-            for node in data["Nodes"]:
-                node_id = iter_node(node["Node Index"])
-                if recurse and node["Node Index"] == 0 and parent_id != None:
-                    dot.edge(parent_id, node_id)
+            print("File has no nodes to graph: " + filepath)
     else:
-        print("File has no nodes to graph: " + filepath)
+        if "Nodes" in data:
+            if index >= 0 and index < len(data["Nodes"]):
+                iter_node(index)
 
     if parent_id == None:
         print("Rendering... (may take a while for recursive graphs)")
