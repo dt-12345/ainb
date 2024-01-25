@@ -100,16 +100,16 @@ def graph(filepath, recurse=False, parent_id=None, dot=None, index=None):
                         ids = [id]
                         for node in data["Nodes"][node_index]["Linked Nodes"]["Standard Link"]:
                             ids.append(iter_node(node["Node Index"], ids[data["Nodes"][node_index]["Linked Nodes"]["Standard Link"].index(node)], None, already_seen))
-                elif "Resident Update Link" in data["Nodes"][node_index]["Linked Nodes"]:
+                if "Resident Update Link" in data["Nodes"][node_index]["Linked Nodes"]:
                     for node in data["Nodes"][node_index]["Linked Nodes"]["Resident Update Link"]:
                         iter_node(node["Node Index"], id, "Resident Update", already_seen)
-                elif "Output/bool Input/float Input Link" in data["Nodes"][node_index]["Linked Nodes"]:
+                if "Output/bool Input/float Input Link" in data["Nodes"][node_index]["Linked Nodes"]:
                     for node in data["Nodes"][node_index]["Linked Nodes"]["Output/bool Input/float Input Link"]:
                         iter_node(node["Node Index"], id, node["Parameter"], already_seen, precon=True)
-                elif "int Input Link" in data["Nodes"][node_index]["Linked Nodes"]:
+                if "int Input Link" in data["Nodes"][node_index]["Linked Nodes"]:
                     for node in data["Nodes"][node_index]["Linked Nodes"]["int Input Link"]:
                         iter_node(node["Node Index"], id, node["Parameter"], already_seen, precon=True)
-                elif "String Input Link" in data["Nodes"][node_index]["Linked Nodes"]:
+                if "String Input Link" in data["Nodes"][node_index]["Linked Nodes"]:
                     for node in data["Nodes"][node_index]["Linked Nodes"]["String Input Link"]:
                         iter_node(node["Node Index"], id, node["Parameter"], already_seen, precon=True)
             return id
