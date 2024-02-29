@@ -673,6 +673,7 @@ class AINB:
             entry["Precondition Nodes"] = []
             for i in range(entry["Precondition Count"]):
                 entry["Precondition Nodes"].append(self.precondition_nodes[entry["Base Precondition Node"] + i])
+        del entry["Base Precondition Node"]
         # This is all to get the function count and I know it could be way more efficient but it's late and I can't think
         if entry["Attachment Count"] > 0:
             entry["Attachments"] = []
@@ -893,6 +894,8 @@ class AINB:
         precon_counts = {}
         exb_info = []
         attach_exb_info = []
+        base_precon = 0
+        base_precons = []
 
         # Nodes
         if self.nodes:
@@ -1040,10 +1043,13 @@ class AINB:
                 if node["Node Index"] not in multi_counts:
                     multi_counts[node["Node Index"]] = 0
                 if "Precondition Nodes" in node:
+                    base_precons.append(base_precon)
                     for i in range(len(node["Precondition Nodes"])):
-                        precondition_nodes.update({node["Base Precondition Node"] + i : node["Precondition Nodes"][i]})
+                        precondition_nodes.update({base_precon + i : node["Precondition Nodes"][i]})
+                    base_precon += len(node["Precondition Nodes"])
                     precon_counts[node["Node Index"]] = len(node["Precondition Nodes"])
                 else:
+                    base_precons.append(0)
                     precon_counts[node["Node Index"]] = 0
                 if "Entry String" in node:
                     entry_strings.append((node["Node Index"], node["Entry String"]))
@@ -1366,7 +1372,7 @@ class AINB:
                 buffer.write(u16(multi_counts[node["Node Index"]]))
                 buffer.write(u16(0))
                 buffer.write(u32(base_attach))
-                buffer.write(u16(node["Base Precondition Node"]))
+                buffer.write(u16(base_precons[node["Node Index"]]))
                 buffer.write(u16(precon_counts[node["Node Index"]]))
                 buffer.write(u16(0)) # 0x58 Section Offset (Unused in TotK)
                 buffer.write(u16(0))
@@ -1490,7 +1496,10 @@ class AINB:
                     if type == "userdefined":
                         buffer.add_string(entry["Class"])
                         buffer.write(u32(buffer._string_refs[entry["Class"]]))
-                    buffer.write(s16(entry["Node Index"]))
+                    if "Sources" not in entry:
+                        buffer.write(s16(entry["Node Index"]))
+                    else:
+                        buffer.write(s16(-100 - [x for x in range(len(multis) - len(entry["Sources"]) + 1) if multis[x:x+len(entry["Sources"])] == entry["Sources"]][0]))
                     buffer.write(s16(entry["Parameter Index"]))
                     if "Global Parameters Index" in entry:
                         buffer.write(u16(entry["Global Parameters Index"]))
