@@ -2,6 +2,7 @@ from exb import EXB
 from utils import *
 from enum import Enum
 import json
+import os
 try:
     import mmh3
 except ImportError:
@@ -317,9 +318,9 @@ class AINB:
             if "Nodes" in data:
                 self.nodes = data["Nodes"]
                 for node in self.nodes:
-                    if "Immediate Parameters" in node:
-                        for type in node["Immediate Parameters"]:
-                            for entry in node["Immediate Parameters"][type]:
+                    if "Internal Parameters" in node:
+                        for type in node["Internal Parameters"]:
+                            for entry in node["Internal Parameters"][type]:
                                 if "Function" in entry:
                                     self.functions[entry["EXB Index"]] = entry["Function"]
                                     self.exb_instances += 1
@@ -356,8 +357,8 @@ class AINB:
 
             if "Commands" in data:
                 self.commands = data["Commands"]
-            if "Global Parameters" in data:
-                self.global_params = data["Global Parameters"]
+            if "Local Blackboard Parameters" in data:
+                self.global_params = data["Local Blackboard Parameters"]
             if self.functions:
                 self.exb = EXB(None, self.functions, from_dict)
                 i = len(self.functions)
@@ -369,8 +370,8 @@ class AINB:
                     del self.exb.exb_section["Commands"]
             if "File Hashes" in data:
                 self.file_hashes = data["File Hashes"]
-            if "Embedded AINB Files" in data:
-                self.ainb_array = data["Embedded AINB Files"]
+            if "Modules" in data:
+                self.ainb_array = data["Modules"]
         
         self.output_dict["Info"] = {
                 "Magic" : self.magic,
@@ -381,9 +382,9 @@ class AINB:
         if self.commands:
             self.output_dict["Commands"] = self.commands
         if self.global_params:
-            self.output_dict["Global Parameters"] = self.global_params
+            self.output_dict["Local Blackboard Parameters"] = self.global_params
         if self.ainb_array:
-            self.output_dict["Embedded AINB Files"] = self.ainb_array
+            self.output_dict["Modules"] = self.ainb_array
         if self.nodes:
             self.output_dict["Nodes"] = self.nodes
         self.output_dict["File Hashes"] = self.file_hashes
@@ -441,9 +442,9 @@ class AINB:
         entry = {}
         entry["Filename"] = self.string_pool.read_string(self.stream.read_u32())
         entry["Name Hash"] = hex(self.stream.read_u32())
-        del entry["Name Hash"]
-        entry["Unknown Hash 1"] = hex(self.stream.read_u32())
-        entry["Unknown Hash 2"] = hex(self.stream.read_u32())
+        entry["Filename Hash"] = hex(self.stream.read_u32())
+        entry["Extension Hash"] = hex(self.stream.read_u32())
+        del entry["Name Hash"], entry["Filename Hash"], entry["Extension Hash"]
         return entry
 
     def GlobalParameters(self):
@@ -489,15 +490,15 @@ class AINB:
         if flags:
             entry["Flags"] = []
             if flags & 0x80:
-                entry["Flags"].append("Pulse Thread Local Storage")
+                entry["Flags"].append("Pulse TLS")
             if flags & 0x100:
-                entry["Flags"].append("Set Pointer Flag Bit Zero")
+                entry["Flags"].append("Is Output")
             if (flags & 0xc200) == 0xc200:
                 entry["EXB Index"] = index
                 entry["Function"] = self.exb.commands[entry["EXB Index"]]
                 self.functions[entry["EXB Index"]] = entry["Function"]
             elif flags & 0x8000:
-                entry["Global Parameters Index"] = index
+                entry["Local Blackboard Index"] = index
             if not(entry["Flags"]):
                 del entry["Flags"]
         # User-Defined types don't have values stored
@@ -561,15 +562,15 @@ class AINB:
         if flags:
             entry["Flags"] = []
             if flags & 0x80:
-                entry["Flags"].append("Pulse Thread Local Storage")
+                entry["Flags"].append("Pulse TLS")
             if flags & 0x100:
-                entry["Flags"].append("Set Pointer Flag Bit Zero")
+                entry["Flags"].append("Is Output")
             if (flags & 0xc200) == 0xc200:
                 entry["EXB Index"] = index
                 entry["Function"] = self.exb.commands[entry["EXB Index"]]
                 self.functions[entry["EXB Index"]] = entry["Function"]
             elif flags & 0x8000:
-                entry["Global Parameters Index"] = index
+                entry["Local Blackboard Index"] = index
             if not(entry["Flags"]):
                 del entry["Flags"]
         if type == "string":
@@ -592,7 +593,7 @@ class AINB:
         entry["Name"] = self.string_pool.read_string(flags & 0x3FFFFFFF)
         flag = flags & 0x80000000
         if flag:
-            entry["Set Pointer Flag Bit Zero"] = True
+            entry["Is Output"] = True
         if type == "userdefined":
             entry["Class"] = self.string_pool.read_string(self.stream.read_u32())
         return entry
@@ -606,15 +607,15 @@ class AINB:
         if flags:
             entry["Flags"] = []
             if flags & 0x80:
-                entry["Flags"].append("Pulse Thread Local Storage")
+                entry["Flags"].append("Pulse TLS")
             if flags & 0x100:
-                entry["Flags"].append("Set Pointer Flag Bit Zero")
+                entry["Flags"].append("Is Output")
             if (flags & 0xc200) == 0xc200:
                 entry["EXB Index"] = index
                 entry["Function"] = self.exb.commands[entry["EXB Index"]]
                 self.functions[entry["EXB Index"]] = entry["Function"]
             elif flags & 0x8000:
-                entry["Global Parameters Index"] = index
+                entry["Local Blackboard Index"] = index
             if not(entry["Flags"]):
                 del entry["Flags"]
         return entry
@@ -651,7 +652,7 @@ class AINB:
             if flags & 0b1:
                 entry["Flags"].append("Is Precondition Node")
             if flags & 0b10:
-                entry["Flags"].append("Is External AINB")
+                entry["Flags"].append("Is Module")
             if flags & 0b100:
                 entry["Flags"].append("Is Resident Node")
         self.stream.read_u8()
@@ -712,7 +713,7 @@ class AINB:
             if not(immediate_parameters[type_standard[i]]):
                 del immediate_parameters[type_standard[i]]
         if immediate_parameters:
-            entry["Immediate Parameters"] = immediate_parameters
+            entry["Internal Parameters"] = immediate_parameters
         input_parameters = {}
         output_parameters = {}
         for i in range(6):
@@ -750,12 +751,12 @@ class AINB:
         start = self.stream.tell()
         if sum(counts) != 0:
             entry["Linked Nodes"] = {}
-            mapping = {0 : "Output/bool Input/float Input Link",
+            mapping = {0 : "Bool/Float Input Link and Output Link",
                        1 : None, # Unused in TotK
                        2 : "Standard Link",
                        3 : "Resident Update Link",
                        4 : "String Input Link",
-                       5 : "int Input Link",
+                       5 : "Int Input Link",
                        6 : None, 7 : None, 8 : None, 9 : None} # Unused in TotK
             for i in range(10):
                 entry["Linked Nodes"][mapping[i]] = []
@@ -782,7 +783,7 @@ class AINB:
                                 index = self.stream.read_s16()
                                 flag = self.stream.read_u16() >> 15 # Is valid index
                                 if flag:
-                                    entry["Global Parameters Index"] = index
+                                    entry["Local Blackboard Index"] = index
                                 if is_end:
                                     info["Condition"] = "Default"
                                 else:
@@ -791,7 +792,7 @@ class AINB:
                                 index = self.stream.read_u16()
                                 flag = self.stream.read_u16() >> 15 # Is valid index
                                 if flag:
-                                    entry["Global Parameters Index"] = index
+                                    entry["Local Blackboard Index"] = index
                                 if not(is_end):
                                     info["Condition Min"] = self.stream.read_f32()
                                     self.stream.read_u32()
@@ -802,7 +803,7 @@ class AINB:
                                 index = self.stream.read_u16()
                                 flag = self.stream.read_u16() >> 15 # Is valid index
                                 if flag:
-                                    entry["Global Parameters Index"] = index
+                                    entry["Local Blackboard Index"] = index
                                 if is_end:
                                     info[self.string_pool.read_string(self.stream.read_u32())] = "Default"
                                 else:
@@ -960,9 +961,9 @@ class AINB:
                     attach_counts[node["Node Index"]] = len(node["Attachments"])
                 else:
                     attach_counts[node["Node Index"]] = 0
-                if "Immediate Parameters" in node:
-                    for type in node["Immediate Parameters"]:
-                        for entry in node["Immediate Parameters"][type]:
+                if "Internal Parameters" in node:
+                    for type in node["Internal Parameters"]:
+                        for entry in node["Internal Parameters"][type]:
                             if "Function" in entry:
                                 exb_count += 1
                                 size = 0
@@ -1119,8 +1120,8 @@ class AINB:
                 buffer.add_string(file["Filename"])
                 buffer.write(u32(buffer._string_refs[file["Filename"]]))
                 buffer.write(u32(mmh3.hash(file["Filename"], signed=False)))
-                buffer.write(u32(int(file["Unknown Hash 1"][2:], 16)))
-                buffer.write(u32(int(file["Unknown Hash 2"][2:], 16)))        
+                buffer.write(u32(mmh3.hash(os.path.splitext(os.path.basename(file["Filename"]))[0], signed=False)))
+                buffer.write(u32(mmh3.hash(os.path.splitext(file["Filename"])[1].replace('.', ''), signed=False)))  
         else:
             buffer.skip(48)
 
@@ -1133,13 +1134,13 @@ class AINB:
         if self.nodes:
             for node in self.nodes:
                 bodies.append(buffer.tell())
-                if "Immediate Parameters" in node:
+                if "Internal Parameters" in node:
                     for type in type_standard:
-                        if type in node["Immediate Parameters"]:
-                            for entry in node["Immediate Parameters"][type]:
+                        if type in node["Internal Parameters"]:
+                            for entry in node["Internal Parameters"][type]:
                                 immediate_parameters[type].append(entry)
-                            buffer.write(u32(len(immediate_parameters[type]) - len(node["Immediate Parameters"][type])))
-                            buffer.write(u32(len(node["Immediate Parameters"][type])))
+                            buffer.write(u32(len(immediate_parameters[type]) - len(node["Internal Parameters"][type])))
+                            buffer.write(u32(len(node["Internal Parameters"][type])))
                             immediate_current[type] = len(immediate_parameters[type])
                         else:
                             buffer.write(u32(immediate_current[type]))
@@ -1177,8 +1178,8 @@ class AINB:
                         buffer.write(u32(0))
                 if "Linked Nodes" in node:
                     total = 0
-                    for connection in ["Output/bool Input/float Input Link", 2, "Standard Link",
-                                            "Resident Update Link", "String Input Link", "int Input Link",
+                    for connection in ["Bool/Float Input Link and Output Link", 2, "Standard Link",
+                                            "Resident Update Link", "String Input Link", "Int Input Link",
                                             7, 8, 9, 10]:
                         if connection in node["Linked Nodes"]:
                             buffer.write(u8(len(node["Linked Nodes"][connection])))
@@ -1191,7 +1192,7 @@ class AINB:
                     current = start + total * 4
                     i = 0
                     for connection in node["Linked Nodes"]:
-                        if connection == "Output/bool Input/float Input Link":
+                        if connection == "Bool/Float Input Link and Output Link":
                             for entry in node["Linked Nodes"][connection]:
                                 buffer.write(u32(current))
                                 pos = buffer.tell()
@@ -1358,7 +1359,7 @@ class AINB:
                 if "Flags" in node:
                     if "Is Precondition Node" in node["Flags"]:
                         flags = flags | 1
-                    if "Is External AINB" in node["Flags"]:
+                    if "Is Module" in node["Flags"]:
                         flags = flags | 2
                     if "Is Resident Node" in node["Flags"]:
                         flags = flags | 4
@@ -1442,8 +1443,8 @@ class AINB:
                     if type == "userdefined":
                         buffer.add_string(entry["Class"])
                         buffer.write(u32(buffer._string_refs[entry["Class"]]))
-                    if "Global Parameters Index" in entry:
-                        buffer.write(u16(entry["Global Parameters Index"]))
+                    if "Local Blackboard Index" in entry:
+                        buffer.write(u16(entry["Local Blackboard Index"]))
                         flags += 0x8000
                     elif "EXB Index" in entry:
                         buffer.write(u16(entry["EXB Index"]))
@@ -1452,9 +1453,9 @@ class AINB:
                         buffer.write(u16(0))
                     if "Flags" in entry:
                         for flag in entry["Flags"]:
-                            if flag == "Pulse Thread Local Storage":
+                            if flag == "Pulse TLS":
                                 flags += 0x80
-                            if flag == "Set Pointer Flag Bit Zero":
+                            if flag == "Is Output":
                                 flags += 0x100
                     buffer.write(u16(flags))
                     if type == "int":
@@ -1501,8 +1502,8 @@ class AINB:
                     else:
                         buffer.write(s16(-100 - [x for x in range(len(multis) - len(entry["Sources"]) + 1) if multis[x:x+len(entry["Sources"])] == entry["Sources"]][0]))
                     buffer.write(s16(entry["Parameter Index"]))
-                    if "Global Parameters Index" in entry:
-                        buffer.write(u16(entry["Global Parameters Index"]))
+                    if "Local Blackboard Index" in entry:
+                        buffer.write(u16(entry["Local Blackboard Index"]))
                         flags += 0x8000
                     elif "EXB Index" in entry:
                         buffer.write(u16(entry["EXB Index"]))
@@ -1511,9 +1512,9 @@ class AINB:
                         buffer.write(u16(0))
                     if "Flags" in entry:
                         for flag in entry["Flags"]:
-                            if flag == "Pulse Thread Local Storage":
+                            if flag == "Pulse TLS":
                                 flags += 0x80
-                            if flag == "Set Pointer Flag Bit Zero":
+                            if flag == "Is Output":
                                 flags += 0x100
                     buffer.write(u16(flags))
                     if type == "int":
@@ -1533,7 +1534,7 @@ class AINB:
                 for entry in output_parameters[type]:
                     buffer.add_string(entry["Name"])
                     offset = buffer._string_refs[entry["Name"]]
-                    if "Set Pointer Flag Bit Zero" in entry:
+                    if "Is Output" in entry:
                         buffer.write(u32(offset | (1 << 31)))
                     else:
                         buffer.write(u32(offset))
@@ -1549,8 +1550,8 @@ class AINB:
                 buffer.write(s16(entry["Node Index"]))
                 buffer.write(s16(entry["Parameter Index"]))
                 flags = 0x0
-                if "Global Parameters Index" in entry:
-                    buffer.write(u16(entry["Global Parameters Index"]))
+                if "Local Blackboard Index" in entry:
+                    buffer.write(u16(entry["Local Blackboard Index"]))
                     flags += 0x8000
                 elif "EXB Index" in entry:
                     buffer.write(u16(entry["EXB Index"]))
@@ -1559,9 +1560,9 @@ class AINB:
                     buffer.write(u16(0))
                 if "Flags" in entry:
                     for flag in entry["Flags"]:
-                        if flag == "Pulse Thread Local Storage":
+                        if flag == "Pulse TLS":
                             flags += 0x80
-                        if flag == "Set Pointer Flag Bit Zero":
+                        if flag == "Is Output":
                             flags += 0x100
                 buffer.write(u16(flags))
         resident_start = buffer.tell()
