@@ -58,7 +58,7 @@ def graph(filepath, recurse=False, parent_id=None, dot=None, index=None):
             already_seen.append(node_index)
             if recurse:
                 if "Flags" in data["Nodes"][node_index]:
-                    if "Is External AINB" in data["Nodes"][node_index]["Flags"]:
+                    if "Is Module" in data["Nodes"][node_index]["Flags"]:
                         extensions = [".json", ".ainb", ".yml", ".yaml"]
                         for extension in extensions:
                             try:
@@ -103,11 +103,11 @@ def graph(filepath, recurse=False, parent_id=None, dot=None, index=None):
                 if "Resident Update Link" in data["Nodes"][node_index]["Linked Nodes"]:
                     for node in data["Nodes"][node_index]["Linked Nodes"]["Resident Update Link"]:
                         iter_node(node["Node Index"], id, "Resident Update", already_seen)
-                if "Output/bool Input/float Input Link" in data["Nodes"][node_index]["Linked Nodes"]:
-                    for node in data["Nodes"][node_index]["Linked Nodes"]["Output/bool Input/float Input Link"]:
+                if "Bool/Float Input Link and Output Link" in data["Nodes"][node_index]["Linked Nodes"]:
+                    for node in data["Nodes"][node_index]["Linked Nodes"]["Bool/Float Input Link and Output Link"]:
                         iter_node(node["Node Index"], id, node["Parameter"], already_seen, precon=True)
-                if "int Input Link" in data["Nodes"][node_index]["Linked Nodes"]:
-                    for node in data["Nodes"][node_index]["Linked Nodes"]["int Input Link"]:
+                if "Int Input Link" in data["Nodes"][node_index]["Linked Nodes"]:
+                    for node in data["Nodes"][node_index]["Linked Nodes"]["Int Input Link"]:
                         iter_node(node["Node Index"], id, node["Parameter"], already_seen, precon=True)
                 if "String Input Link" in data["Nodes"][node_index]["Linked Nodes"]:
                     for node in data["Nodes"][node_index]["Linked Nodes"]["String Input Link"]:
