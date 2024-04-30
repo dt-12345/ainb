@@ -61,7 +61,7 @@ class AINB:
             if self.magic != "AIB ": # Must be .ainb file with correct magic
                 raise Exception(f"Invalid magic {self.magic} - expected 'AIB '")
             self.version = self.stream.read_u32()
-            if self.version not in [0x404, 0x407]: # Must be version 4.4 or 4.7 (4.4 isn't actually supported though)
+            if self.version not in [0x404, 0x407]: # Must be version 4.4 or 4.7
                 raise Exception(f"Invalid version {hex(self.version)} - expected 0x404 (S3/NSS) or 0x407 (TotK)")
             
             self._filename_offset = self.stream.read_u32()
@@ -272,34 +272,36 @@ class AINB:
             Child Replacement
             These replacements/removals happen upon file initialization (mostly to remove debug nodes)
             We keep the data bc there's no way to recover the replacement table otherwise
+            Note: not present in v404
             """
-            self.stream.seek(self.child_replacement_offset)
-            self.is_replaced = self.stream.read_u8() # Set at runtime, just ignore
-            self.stream.skip(1)
-            count = self.stream.read_u16()
-            node_count = self.stream.read_s16() # = Node count - node removal count - 2 * replacement node count
-            attachment_count = self.stream.read_s16() # = Attachment count - attachment removal coutn
-            self.replacements = []
-            for i in range(count):
-                self.replacements.append(self.ChildReplace())
-            if self.replacements:
-                for replacement in self.replacements: # Don't actually replace the node, just leave a note
-                    if replacement["Type"] == 0:
-                        i = 0
-                        for type in self.nodes[replacement["Node Index"]]["Linked Nodes"]:
-                            for node in self.nodes[replacement["Node Index"]]["Linked Nodes"][type]:
-                                i += 0
-                                if i == replacement["Child Index"]:
-                                    node["Is Removed at Runtime"] = True
-                    if replacement["Type"] == 1:
-                        i = 0
-                        for type in self.nodes[replacement["Node Index"]]["Linked Nodes"]:
-                            for node in self.nodes[replacement["Node Index"]]["Linked Nodes"][type]:
-                                if i == replacement["Child Index"]:
-                                    node["Replacement Node Index"] = replacement["Replacement Index"]
-                                i += 1
-                    if replacement["Type"] == 2:
-                        self.nodes[replacement["Node Index"]]["Attachments"][replacement["Attachment Index"]]["Is Removed at Runtime"] = True
+            if(self.version > 0x404):
+                self.stream.seek(self.child_replacement_offset)
+                self.is_replaced = self.stream.read_u8() # Set at runtime, just ignore
+                self.stream.skip(1)
+                count = self.stream.read_u16()
+                node_count = self.stream.read_s16() # = Node count - node removal count - 2 * replacement node count
+                attachment_count = self.stream.read_s16() # = Attachment count - attachment removal coutn
+                self.replacements = []
+                for i in range(count):
+                    self.replacements.append(self.ChildReplace())
+                if self.replacements:
+                    for replacement in self.replacements: # Don't actually replace the node, just leave a note
+                        if replacement["Type"] == 0:
+                            i = 0
+                            for type in self.nodes[replacement["Node Index"]]["Linked Nodes"]:
+                                for node in self.nodes[replacement["Node Index"]]["Linked Nodes"][type]:
+                                    i += 0
+                                    if i == replacement["Child Index"]:
+                                        node["Is Removed at Runtime"] = True
+                        if replacement["Type"] == 1:
+                            i = 0
+                            for type in self.nodes[replacement["Node Index"]]["Linked Nodes"]:
+                                for node in self.nodes[replacement["Node Index"]]["Linked Nodes"][type]:
+                                    if i == replacement["Child Index"]:
+                                        node["Replacement Node Index"] = replacement["Replacement Index"]
+                                    i += 1
+                        if replacement["Type"] == 2:
+                            self.nodes[replacement["Node Index"]]["Attachments"][replacement["Attachment Index"]]["Is Removed at Runtime"] = True
             
         else:
             self.magic = data["Info"]["Magic"]
@@ -520,8 +522,11 @@ class AINB:
         entry["Offset"] = self.stream.read_u32()
         entry["EXB Function Count"] = self.stream.read_u16()
         entry["EXB Input/Output Size"] = self.stream.read_u16()
-        entry["Name Hash"] = hex(self.stream.read_u32())
-        del entry["Name Hash"], entry["EXB Function Count"], entry["EXB Input/Output Size"]
+        if(self.version > 0x404):
+            entry["Name Hash"] = hex(self.stream.read_u32()) # not present in v404
+        del entry["EXB Function Count"], entry["EXB Input/Output Size"]
+        if(self.version > 0x404):
+            del entry["Name Hash"]
         return entry
     
     def AttachmentParameters(self):
@@ -657,7 +662,8 @@ class AINB:
                 entry["Flags"].append("Is Resident Node")
         self.stream.read_u8()
         entry["Name"] = self.string_pool.read_string(self.stream.read_u32())
-        entry["Name Hash"] = hex(self.stream.read_u32())
+        if(self.version > 0x404):
+            entry["Name Hash"] = hex(self.stream.read_u32()) # not present in v404
         self.stream.read_u32()
         entry["Parameters Offset"] = self.stream.read_u32()
         entry["EXB Function Count"] = self.stream.read_u16()
@@ -691,7 +697,9 @@ class AINB:
                                     if "Function" in parameter:
                                         exb_count += 1
         # We don't need these anymore actually
-        del entry["Attachment Count"], entry["Base Attachment Index"], entry["Multi-Param Count"], entry["Precondition Count"], entry["Name Hash"]
+        del entry["Attachment Count"], entry["Base Attachment Index"], entry["Multi-Param Count"], entry["Precondition Count"]
+        if(self.version > 0x404):
+            del entry["Name Hash"]
         jumpback = self.stream.tell()
         # Match Node Parameters
         self.stream.seek(entry["Parameters Offset"])
@@ -1365,7 +1373,8 @@ class AINB:
                         flags = flags | 4
                 buffer.write(u8(flags) + padding())
                 buffer.write(u32(buffer._string_refs[node["Name"]]))
-                buffer.write(u32(mmh3.hash(node["Name"], signed=False)))
+                if(self.version > 0x404):
+                    buffer.write(u32(mmh3.hash(node["Name"], signed=False))) # not present in v404
                 buffer.write(u32(0))
                 buffer.write(u32(bodies[node["Node Index"]])) # Write offset later
                 buffer.write(u16(exb_info[node["Node Index"]][0]))
@@ -1400,7 +1409,8 @@ class AINB:
                 buffer.write(u32(attachment_start + 16 * len(attachments) + 100 * attachments.index(attachment)))
                 buffer.write(u16(attach_exb_info[attachments.index(attachment)][0]))
                 buffer.write(u16(attach_exb_info[attachments.index(attachment)][1]))
-                buffer.write(u32(mmh3.hash(attachment["Name"], signed=False)))
+                if(self.version > 0x404):
+                    buffer.write(u32(mmh3.hash(attachment["Name"], signed=False))) # not present in v404
             for attachment in attachments:
                 if "Debug" in attachment["Name"]:
                     buffer.write(u32(1))
