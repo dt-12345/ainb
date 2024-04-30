@@ -1,6 +1,6 @@
 # ainb
 
-Collection of simple Python scripts to work with AINB files from recent Nintendo EPD games (only v4.7 is supported at the moment, v4.4 AINB from *Splatoon 3* or *Nintendo Switch Sports* are not fully compatible)
+Collection of simple Python scripts to work with AINB files from recent Nintendo EPD games (Supports AINB v4.7 found in TOTK and AINB v4.4 from *Splatoon 3* or *Nintendo Switch Sports*)
 
 [AINB file format documentation](https://docs.google.com/document/d/1folGjz7Vq5Y44cDYjEHdBS_EJsInUY5MKhGp0wEJihI/edit?usp=sharing)
 

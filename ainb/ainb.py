@@ -61,7 +61,7 @@ class AINB:
             if self.magic != "AIB ": # Must be .ainb file with correct magic
                 raise Exception(f"Invalid magic {self.magic} - expected 'AIB '")
             self.version = self.stream.read_u32()
-            if self.version not in [0x404, 0x407]: # Must be version 4.4 or 4.7 (4.4 isn't actually supported though)
+            if self.version not in [0x404, 0x407]: # Must be version 4.4 or 4.7
                 raise Exception(f"Invalid version {hex(self.version)} - expected 0x404 (S3/NSS) or 0x407 (TotK)")
             
             self._filename_offset = self.stream.read_u32()
