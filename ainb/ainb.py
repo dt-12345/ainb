@@ -850,7 +850,7 @@ class AINB:
 
         # Header (Round 1)
         buffer.write(b'AIB ') # Magic
-        buffer.write(b'\x07\x04\x00\x00')
+        buffer.write(u32(self.version))
         buffer.add_string(self.filename)
         buffer.write(u32(buffer._string_refs[self.filename]))
         buffer.write(u32(len(self.commands)))
@@ -858,7 +858,8 @@ class AINB:
         buffer.write(u32(len([precon for precon in [node for node in self.nodes if "Flags" in node] if "Is Precondition Node" in precon["Flags"]])))
         buffer.write(u32(0)) # Skip for now
         buffer.write(u32(len([node for node in self.nodes if "Output" in node["Node Type"]])))
-        buffer.write(u32(116 + 24 * len(self.commands) + 60 * len(self.nodes)))
+        nodeSize = 60 if self.version > 0x404 else 56
+        buffer.write(u32(116 + 24 * len(self.commands) + nodeSize * len(self.nodes)))
         for i in range(11):
             buffer.write(u32(4)) # Skip writing offsets until they're known
         buffer.write(u64(0)) # Skip 8
@@ -1063,7 +1064,7 @@ class AINB:
                 if "Entry String" in node:
                     entry_strings.append((node["Node Index"], node["Entry String"]))
                 exb_info.append((exb_count, exb_size))
-        buffer.skip(len(self.nodes) * 60)
+        buffer.skip(len(self.nodes) * nodeSize)
 
         # Global Parameters
         if self.global_params:
@@ -1403,10 +1404,11 @@ class AINB:
             for entry in attachment_indices:
                 buffer.write(u32(entry))
             attachment_start = buffer.tell()
+            attSize = 16 if (self.version > 0x404) else 12
             for attachment in attachments:
                 buffer.add_string(attachment["Name"])
                 buffer.write(u32(buffer._string_refs[attachment["Name"]]))
-                buffer.write(u32(attachment_start + 16 * len(attachments) + 100 * attachments.index(attachment)))
+                buffer.write(u32(attachment_start + attSize * len(attachments) + 100 * attachments.index(attachment)))
                 buffer.write(u16(attach_exb_info[attachments.index(attachment)][0]))
                 buffer.write(u16(attach_exb_info[attachments.index(attachment)][1]))
                 if(self.version > 0x404):
@@ -1686,7 +1688,10 @@ class AINB:
             buffer.write(u32(exb_start))
         else:
             buffer.write(u32(0))
-        buffer.write(u32(child_replace_start))
+        if self.version > 0x404:
+            buffer.write(u32(child_replace_start))
+        else:
+            buffer.write(u32(0))
         buffer.write(u32(precondition_start))
         buffer.write(u32(resident_start)) # 0x50 is always the same as the resident array offset, unused
         buffer.skip(8)
