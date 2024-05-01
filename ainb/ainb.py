@@ -274,7 +274,7 @@ class AINB:
             We keep the data bc there's no way to recover the replacement table otherwise
             Note: not present in v404
             """
-            if(self.child_replacement_offset != 0):
+            if(self.version > 0x404):
                 self.stream.seek(self.child_replacement_offset)
                 self.is_replaced = self.stream.read_u8() # Set at runtime, just ignore
                 self.stream.skip(1)
@@ -1688,7 +1688,7 @@ class AINB:
             buffer.write(u32(exb_start))
         else:
             buffer.write(u32(0))
-        if replacements:
+        if self.version > 0x404:
             buffer.write(u32(child_replace_start))
         else:
             buffer.write(u32(0))
