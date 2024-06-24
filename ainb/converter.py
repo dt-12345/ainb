@@ -7,32 +7,40 @@ import ainb
 import sys
 import os
 
-def ainb_to_json(filepath): # Converts input AINB file to JSON
+def ainb_to_json(filepath, outdir=""): # Converts input AINB file to JSON
     with open(filepath, 'rb') as file:
         data = file.read()
     file = ainb.AINB(data)
-    with open(file.filename + ".json", 'w', encoding='utf-8') as outfile:
+    if outdir:
+        os.makedirs(outdir, exist_ok=True)
+    with open(os.path.join(outdir, file.filename + ".json"), 'w', encoding='utf-8') as outfile:
         json.dump(file.output_dict, outfile, ensure_ascii=False, indent=4)
 
-def json_to_ainb(filepath): # Converts input JSON file to AINB
+def json_to_ainb(filepath, outdir=""): # Converts input JSON file to AINB
     with open(filepath, 'r', encoding='utf-8') as file:
         data = json.load(file)
     file = ainb.AINB(data, from_dict=True)
-    with open(file.filename + ".ainb", 'wb') as outfile:
+    if outdir:
+        os.makedirs(outdir, exist_ok=True)
+    with open(os.path.join(outdir, file.filename + ".ainb"), 'wb') as outfile:
         file.ToBytes(file, outfile)
 
-def ainb_to_yaml(filepath): # Converts input AINB file to YAML
+def ainb_to_yaml(filepath, outdir=""): # Converts input AINB file to YAML
     with open(filepath, 'rb') as file:
         data = file.read()
     file = ainb.AINB(data)
-    with open(file.filename + ".yml", 'w', encoding='utf-8') as outfile:
+    if outdir:
+        os.makedirs(outdir, exist_ok=True)
+    with open(os.path.join(outdir, file.filename + ".yml"), 'w', encoding='utf-8') as outfile:
         yaml.dump(file.output_dict, outfile, sort_keys=False, allow_unicode=True, encoding='utf-8')
 
-def yaml_to_ainb(filepath): # Converts input YAML file to AINB
+def yaml_to_ainb(filepath, outdir=""): # Converts input YAML file to AINB
     with open(filepath, 'r', encoding='utf-8') as file:
         data = yaml.safe_load(file)
     file = ainb.AINB(data, from_dict=True)
-    with open(file.filename + ".ainb", 'wb') as outfile:
+    if outdir:
+        os.makedirs(outdir, exist_ok=True)
+    with open(os.path.join(outdir, file.filename + ".ainb"), 'wb') as outfile:
         file.ToBytes(file, outfile)
         
 if __name__ == '__main__':

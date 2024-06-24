@@ -141,8 +141,7 @@ class EXB:
         info["Output Data Type"] = Type(self.stream.read_u16()).name
         info["Input Data Type"] = Type(self.stream.read_u16()).name
         # We don't need to store these fields
-        del info["Output Data Type"], info["Input Data Type"], info["Instruction Base Index"]
-        del info["32-bit Scratch Memory Size"], info["64-bit Scratch Memory Size"], info["Static Memory Size"]
+        del info["Instruction Base Index"], info["32-bit Scratch Memory Size"], info["64-bit Scratch Memory Size"], info["Static Memory Size"]
         return info
     
     def ReadInstruction(self):
@@ -248,18 +247,8 @@ class EXB:
                         scratch64_size = max(scratch64_size, instruction["RHS Index/Value"] + size)
             max_64 = max(max_64, scratch64_size)
             buffer.write(u16(scratch64_size))
-            if "LHS Source" in command["Instructions"][-2] and ("ParamTbl" in command["Instructions"][-2]["LHS Source"] or command["Instructions"][-2]["LHS Source"] == "Output"):
-                buffer.write(u16(Type[command["Instructions"][-2]["Data Type"]].value))
-            elif "LHS Source" in command["Instructions"][-2] and "Jump" in command["Instructions"][-2]["LHS Source"]:
-                buffer.write(u16(0))
-            else:
-                buffer.write(u16(1))
-            if "RHS Source" in command["Instructions"][0] and ("ParamTbl" in command["Instructions"][0]["RHS Source"] or command["Instructions"][0]["RHS Source"] == "Input"):
-                buffer.write(u16(Type[command["Instructions"][0]["Data Type"]].value))
-            elif "RHS Source" in command["Instructions"][0] and "Jump" in command["Instructions"][0]["LHS Source"]:
-                buffer.write(u16(0))
-            else:
-                buffer.write(u16(1))
+            buffer.write(u16(Type[command["Output Data Type"]].value))
+            buffer.write(u16(Type[command["Input Data Type"]].value))
         command_start = buffer.tell()
         buffer.write(u32(len(exb.instructions)))
         signature_offsets = []
