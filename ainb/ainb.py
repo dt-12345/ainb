@@ -43,7 +43,7 @@ type_standard = ["int", "bool", "float", "string", "vec3f", "userdefined"] # Dat
 
 type_global = ["string", "int", "float", "bool", "vec3f", "userdefined"] # Data type order (global parameters)
 
-file_category = {"AI" : 0, "Logic" : 1, "Sequence" : 2}
+file_category = {"AI" : 0, "Logic" : 1, "Sequence" : 2, "UniqueSequenceSPL":3}
 
 class AINB:
     def __init__(self, data, from_dict=False):
