@@ -109049,6 +109049,1939 @@
             "World",
             "Func_Action"
             ]
-        }
+        },
+        "GameFlowAbsF32": {
+            "Inputs": {
+            "Float": {
+                "Input": {
+                "default": 0
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Math"
+            ]
+        },
+        "GameFlowAnd": {
+            "Inputs": {
+            "Bool": {
+                "MultiBool": {
+                "default": false
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Core"
+            ]
+        },
+        "GameFlowBoolChanged": {
+            "Inputs": {
+            "Bool": {
+                "Input": {
+                "default": false
+                }
+            }
+            },
+            "Tags": [
+            "Pulse",
+            "Func_Filter"
+            ]
+        },
+        "GameFlowBoolToPulse": {
+            "Inputs": {
+            "Bool": {
+                "Bool": {
+                "default": false
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Pulse"
+            ]
+        },
+        "GameFlowCastF32ToS32": {
+            "Inputs": {
+            "Float": {
+                "Input": {
+                "default": 0
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Core"
+            ]
+        },
+        "GameFlowCastS32ToString": {
+            "Inputs": {
+            "Int": {
+                "Input": {
+                "default": 0
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Core"
+            ]
+        },
+        "GameFlowClampS32": {
+            "Inputs": {
+            "Int": {
+                "Max": {
+                "default": 0
+                },
+                "Min": {
+                "default": 0
+                },
+                "S32": {
+                "default": 0
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Math"
+            ]
+        },
+        "GameFlowCompareF32": {
+            "Inputs": {
+            "Float": {
+                "A": {
+                "default": 0
+                },
+                "B": {
+                "default": 0
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Core"
+            ]
+        },
+        "GameFlowCompareS32": {
+            "Inputs": {
+            "Int": {
+                "S32": {
+                "default": 0
+                },
+                "S32Base": {
+                "default": 0
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Core"
+            ]
+        },
+        "GameFlowConcatString": {
+            "Inputs": {
+            "String": {
+                "StringA": {
+                "default": ""
+                },
+                "StringB": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "String"
+            ]
+        },
+        "GameFlowDevLogNotice": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Pulse": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Debug"
+            ]
+        },
+        "GameFlowGameFrameToSecond": {
+            "Inputs": {
+            "Int": {
+                "GameFrame": {
+                "default": 0
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Math"
+            ]
+        },
+        "GameFlowGetGameFrame": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Framework"
+            ]
+        },
+        "GameFlowJoinPulse": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Input": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Filter",
+            "Pulse"
+            ]
+        },
+        "GameFlowLocalBBGetBool": {
+            "Inputs": {
+            "const void": {
+                "Dummy": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Blackboard"
+            ]
+        },
+        "GameFlowLocalBBGetS32": {
+            "Inputs": {
+            "const void": {
+                "Dummy": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Blackboard"
+            ]
+        },
+        "GameFlowLocalBBSetBoolByPulse": {
+            "Inputs": {
+            "Bool": {
+                "Input": {
+                "default": false
+                }
+            },
+            "const game::ai::Pulse": {
+                "Pulse": {
+                "default": ""
+                }
+            },
+            "const void": {
+                "Dummy": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Blackboard"
+            ]
+        },
+        "GameFlowLocalBBSetS32ByPulse": {
+            "Inputs": {
+            "Int": {
+                "Input": {
+                "default": 0
+                }
+            },
+            "const game::ai::Pulse": {
+                "Pulse": {
+                "default": ""
+                }
+            },
+            "const void": {
+                "Dummy": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Blackboard"
+            ]
+        },
+        "GameFlowMaxF32": {
+            "Inputs": {
+            "Float": {
+                "Inputs": {
+                "default": 0
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Math"
+            ]
+        },
+        "GameFlowMinS32": {
+            "Inputs": {
+            "Int": {
+                "Inputs": {
+                "default": 0
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Math"
+            ]
+        },
+        "GameFlowModS32": {
+            "Inputs": {
+            "Int": {
+                "InputA": {
+                "default": 0
+                },
+                "InputB": {
+                "default": 0
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Core"
+            ]
+        },
+        "GameFlowNot": {
+            "Inputs": {
+            "Bool": {
+                "Bool": {
+                "default": false
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Core"
+            ]
+        },
+        "GameFlowOr": {
+            "Inputs": {
+            "Bool": {
+                "MultiBool": {
+                "default": false
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Core"
+            ]
+        },
+        "GameFlowPulseCount": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Pulse": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Pulse",
+            "Func_Filter"
+            ]
+        },
+        "GameFlowPulseDelay": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Input": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Filter",
+            "Pulse"
+            ]
+        },
+        "GameFlowPulseInterval": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Input": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Filter",
+            "Pulse"
+            ]
+        },
+        "GameFlowPulseOnce": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Input": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Filter",
+            "Pulse"
+            ]
+        },
+        "GameFlowPulseOr": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "MultiInput": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Pulse"
+            ]
+        },
+        "GameFlowPulseToBool": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Pulse": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Pulse",
+            "Func_Pure"
+            ]
+        },
+        "GameFlowRandomS32": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Random"
+            ]
+        },
+        "GameFlowS32Changed": {
+            "Inputs": {
+            "Int": {
+                "S32": {
+                "default": 0
+                }
+            }
+            },
+            "Tags": [
+            "Func_Filter",
+            "Pulse"
+            ]
+        },
+        "GameFlowSelectF32": {
+            "Inputs": {
+            "Bool": {
+                "IsTrue": {
+                "default": false
+                }
+            },
+            "Float": {
+                "ReturnOnFalse": {
+                "default": 0
+                },
+                "ReturnOnTrue": {
+                "default": 0
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Core"
+            ]
+        },
+        "GameFlowSelectPulse": {
+            "Inputs": {
+            "Bool": {
+                "Condition": {
+                "default": false
+                }
+            },
+            "const game::ai::Pulse": {
+                "FalseValue": {
+                "default": ""
+                },
+                "TrueValue": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Pulse"
+            ]
+        },
+        "GameFlowSelectS32": {
+            "Inputs": {
+            "Bool": {
+                "IsTrue": {
+                "default": false
+                }
+            },
+            "Int": {
+                "ReturnOnFalse": {
+                "default": 0
+                },
+                "ReturnOnTrue": {
+                "default": 0
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Core"
+            ]
+        },
+        "GameFlowSubS32": {
+            "Inputs": {
+            "Int": {
+                "InputA": {
+                "default": 0
+                },
+                "InputB": {
+                "default": 0
+                }
+            }
+            },
+            "Tags": [
+            "Func_Pure",
+            "Core"
+            ]
+        },
+        "SplLogicActor": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Framework",
+            "Func_Query"
+            ]
+        },
+        "SplLogicBhvActionAreaSwitchForPlayer": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvActorAndBlitzCompatibles": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                },
+                "Start": {
+                "default": ""
+                },
+                "Stop": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvActorPaintChecker": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvActorWatcher": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvAreaSwitch": {
+            "Inputs": {},
+            "Tags": [
+            "Behavior",
+            "Func_Query",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvAreaSwitchOnline": {
+            "Inputs": {},
+            "Tags": [
+            "Behavior",
+            "Func_Query",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvClearSoundPlayer": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Play": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvConcreteSpawnerSdodrHelper": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Off": {
+                "default": ""
+                },
+                "On": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvCoopWaterLevelSwitch": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvDamageConveyor": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                },
+                "Start": {
+                "default": ""
+                },
+                "Stop": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvEnemyAlertArea": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "NoticeCtrlPlayer": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvEnemyBallKingSdodr": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                },
+                "StartChase": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvEnemyBarrierKingSdodr": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                },
+                "Start": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvEnemyKumasanRocket": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "RotateRocketFirst": {
+                "default": ""
+                },
+                "RotateRocketFourth": {
+                "default": ""
+                },
+                "RotateRocketSecond": {
+                "default": ""
+                },
+                "RotateRocketThird": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvEnemyMantaKing": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                },
+                "Start": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvEnemyRailKing": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                },
+                "Start": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvEnemySharkKing": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "StartStartDemo": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvEnemyTowerKingSdodr": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Start": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvEnemyUtsubox": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "StartStartDemo": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvEntryLiftSdodr": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvEventAreaSwitch": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvEventAreaSwitchSdodr": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvExclamationMarkEmitObj": {
+            "Inputs": {
+            "Bool": {
+                "isEmit": {
+                "default": false
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvExplodeSpawnerSdodr": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvKebaInkCore": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvKeyTreasureBox": {
+            "Inputs": {
+            "Bool": {
+                "CanOpen": {
+                "default": true
+                }
+            },
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvLaunchPadWorldDirector": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Agent3RetireToTrinityBecomeFriend": {
+                "default": ""
+                },
+                "LaunchPadTopAreaIn": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvLocatorTutorial": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvMetaSpawnerSdodr": {
+            "Inputs": {
+            "Float": {
+                "IntervalSec": {
+                "default": 5
+                }
+            },
+            "Int": {
+                "SpawnThreshold": {
+                "default": -1
+                }
+            },
+            "const game::ai::Pulse": {
+                "ForceSpawn": {
+                "default": ""
+                },
+                "Off": {
+                "default": ""
+                },
+                "On": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvMineSpectacle": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                },
+                "Start": {
+                "default": ""
+                },
+                "Stop": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvMissionBigWorldBossObj": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Finish": {
+                "default": ""
+                },
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                },
+                "Start": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvMissionBigWorldDirector": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "IntroduceComradeAreaIn": {
+                "default": ""
+                },
+                "IntroduceTrinity": {
+                "default": ""
+                },
+                "LaunchPadEntryAreaIn": {
+                "default": ""
+                },
+                "StartAgent1HeyAnim": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvMissionCheckPoint": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvMissionGateway": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvMissionSmallWorldDirector": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "StartIkuraShootTutorial": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvMovePainter": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvNavMeshDummyFloor": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Off": {
+                "default": ""
+                },
+                "On": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvPaintTargetAreaManagerSdodr": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvPaintTargetAreaSdodr": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvPeriscope": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvPipeline": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvPlayerMediationForLogic": {
+            "Inputs": {
+            "Float": {
+                "InkMagazineRateThresholdA": {
+                "default": -1
+                },
+                "InkMagazineRateThresholdB": {
+                "default": -1
+                },
+                "InkMagazineRateThresholdC": {
+                "default": -1
+                },
+                "InkMagazineRateThresholdD": {
+                "default": -1
+                },
+                "InkMagazineRateThresholdE": {
+                "default": -1
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvRivalAppearPoint": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "StartAppear": {
+                "default": ""
+                },
+                "StartSpecial": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvRivalAppearSequencerSdodr": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Start": {
+                "default": ""
+                },
+                "Stop": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvSdodrStageDirector": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvSdodrStoryBossDirector": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvSdodrWorldDirector": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "DefeatBattleTutorialEnemy": {
+                "default": ""
+                },
+                "StartBattleTutorial": {
+                "default": ""
+                },
+                "StartHackingIntroduceDemo": {
+                "default": ""
+                },
+                "StartWorldTowerSoundDemo": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvShootingBox": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "BounceFence": {
+                "default": ""
+                },
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                },
+                "SetShooting": {
+                "default": ""
+                },
+                "StartShooting": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvSpawnerForBeaconGimmick": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Spawn": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvSpawnerForShieldGimmick": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Spawn": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvSpawnerForSprinklerGimmick": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Spawn": {
+                "default": ""
+                },
+                "Sprinkle": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvSpectacleCoreBattleManager": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvSpectacleManager": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvSupplyPointAuto": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvSwitchOnOff": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                },
+                "SwitchOff": {
+                "default": ""
+                },
+                "SwitchOn": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvSwitchOnOffInputOnlyAILift": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Start": {
+                "default": ""
+                },
+                "Stop": {
+                "default": ""
+                },
+                "SwitchOff": {
+                "default": ""
+                },
+                "SwitchOn": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvSwitchOnOffOutputOnly": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvSwitchStep": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "KeepOn": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvTimeLimitStop": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Start": {
+                "default": ""
+                },
+                "Stop": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvTreasureRippleEmitObj": {
+            "Inputs": {
+            "Bool": {
+                "isEmit": {
+                "default": false
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvTutorialDirector": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "EnterEnemyPaintArea": {
+                "default": ""
+                },
+                "EnterShortcutArea": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvVictoryBallManagerSdodr": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvVictoryBallSpawnerSdodr": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvVictoryLiftSdodr": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvWallaObjPlacementGroupTag": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "ForceActivate": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicBhvWoodenFigure": {
+            "Inputs": {
+            "Bool": {
+                "IsAutomationMain": {
+                "default": false
+                }
+            },
+            "const game::ai::Pulse": {
+                "Logic_Activate": {
+                "default": ""
+                },
+                "Logic_Sleep": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Behavior",
+            "Framework"
+            ]
+        },
+        "SplLogicChangeOceanSimulation": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Pulse": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicChangeScene": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Pulse": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicChangeSceneShop": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Pulse": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicCheckMatoiActive": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicCheckMissionEventFlag": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicControllerKeyLightDisplayOn": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "On": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicDebugDrawText": {
+            "Inputs": {
+            "Float": {
+                "PosX": {
+                "default": 0
+                },
+                "PosY": {
+                "default": 0
+                },
+                "Scale": {
+                "default": 1
+                }
+            },
+            "Int": {
+                "FrameNum": {
+                "default": 1
+                }
+            },
+            "String": {
+                "Input": {
+                "default": ""
+                }
+            },
+            "const game::ai::Pulse": {
+                "Pulse": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query"
+            ]
+        },
+        "SplLogicGetGachiAreaTeam": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicGetGachiLeftCount": {
+            "Inputs": {
+            "spl::Team": {
+                "Team": {
+                "default": "Alpha"
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicGetGachiyaguraCurrentCount": {
+            "Inputs": {
+            "spl::Team": {
+                "Team": {
+                "default": "Alpha"
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicGetPlazaMode": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicGetVersusMode": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicGetVersusRule": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicIsPassedGachihokoCheckPoint": {
+            "Inputs": {
+            "spl::Team": {
+                "Team": {
+                "default": "Alpha"
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicJudgeTipsPlayground": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicLftBlitzCompatibles": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Start": {
+                "default": ""
+                },
+                "Stop": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "AILift",
+            "Func_Query",
+            "Framework"
+            ]
+        },
+        "SplLogicLftDrawer": {
+            "Inputs": {
+            "Bool": {
+                "IsPulling": {
+                "default": false
+                }
+            }
+            },
+            "Tags": [
+            "AILift",
+            "Func_Query",
+            "Framework"
+            ]
+        },
+        "SplLogicLftRotateToggle": {
+            "Inputs": {
+            "Bool": {
+                "IsRotate": {
+                "default": false
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "AILift",
+            "Framework"
+            ]
+        },
+        "SplLogicLftRotateTogglePoint": {
+            "Inputs": {
+            "Bool": {
+                "IsAccel": {
+                "default": false
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "AILift",
+            "Framework"
+            ]
+        },
+        "SplLogicLftTwoPoint": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "GoToEnd": {
+                "default": ""
+                },
+                "GoToStart": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "AILift",
+            "Func_Query",
+            "Framework"
+            ]
+        },
+        "SplLogicLimitLowerVersion": {
+            "Inputs": {},
+            "Tags": [
+            "Sequence"
+            ]
+        },
+        "SplLogicLobbyToPlaza": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Pulse": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicMissionRandomTalkSelector": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Input": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicMissionStageSequence": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicPlayBigWorldAreaEntryDemo": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Pulse": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicPlayEvent": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Pulse": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicSaveMissionEventFlag": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Pulse": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicSdodrStageSequence": {
+            "Inputs": {},
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicSendBgmCommand": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Pulse": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicShowSdodrTalkWindow": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Exit": {
+                "default": ""
+                },
+                "Show": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicShowTalkWindowMission": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Exit": {
+                "default": ""
+                },
+                "Show": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
+        },
+        "SplLogicUIStartAnnounce": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "Pulse": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "UI"
+            ]
+        },
+        "SplLogicViewTutorialMessage": {
+            "Inputs": {
+            "const game::ai::Pulse": {
+                "View": {
+                "default": ""
+                }
+            }
+            },
+            "Tags": [
+            "Func_Query",
+            "Sequence"
+            ]
         }
     }
+}
