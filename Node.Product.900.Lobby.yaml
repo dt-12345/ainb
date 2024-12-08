@@ -1,0 +1,1532 @@
+Version: 4
+IsBigEndian: False
+SupportPaths: False
+HasReferenceNodes: False
+root:
+  GameNodeDebugPrintString:
+    Inputs:
+      String:
+        Input: {default: ''}
+    Tags:
+      - Func_Action
+      - Debug
+      - Badge_DebugLog
+      - Badge_Base
+  GameNodeDummyAction:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - General
+  GameNodeDummyActionPrint:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - General
+      - Badge_DebugLog
+  GameNodeSetStringToLocalBB:
+    Inputs:
+      String:
+        Input: {default: ''}
+    Tags:
+      - Func_Action
+      - Blackboard
+      - Badge_Base
+  GameNodeWaitFrame:
+    Inputs:
+      Int:
+        S32: {default: l 0}
+    Tags:
+      - Func_Action
+      - General
+  GameSeqActorSceneModulePostLoadBanc:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqChangeScene:
+    Inputs:
+      String:
+        String: {default: ''}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqClearAllDynamicPreActor:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqDestroyMap:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqEndTraversedActorIgniteSimultaneouslySection:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqErrorViewer:
+    Inputs:
+      nn::Result:
+        Result: {default: ''}
+      nn::err::ApplicationErrorArg:
+        AppErrorArg: {default: ''}
+      nn::err::ErrorCode:
+        ErrorCode: {default: ''}
+      nn::err::ErrorResultVariant:
+        ErrorResultVariant: {default: ''}
+    Tags:
+      - Func_Action
+      - Applet
+  GameSeqFinalizeActorSceneModule:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqFinishDeleteAllActorForSequence:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqHandleChangeState:
+    Inputs: {}
+    Tags:
+      - Func_Selector
+      - General
+  GameSeqHandleFailure:
+    Inputs: {}
+    Tags:
+      - Func_Selector
+      - General
+  GameSeqInitializeActorSceneModule:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqInterpActorRelativeCamera:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Camera
+  GameSeqInterpFixedCamera:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Camera
+  GameSeqLeaveInterruptSequence:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqLoadPlacement:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqModuleSceneProc_Enter:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqModuleSceneProc_Leave:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqModuleSceneProc_PostCreateActors:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqModuleSceneProc_PostLoadBanc:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqModuleSceneProc_WaitForFaderOut:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqNifmApplet:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Applet
+  GameSeqNintendoAccount:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Applet
+  GameSeqOpenScreen:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - UI
+  GameSeqPlayEvent:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Event
+  GameSeqRequestDeleteAllActorForSequence:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqRequestPause:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqRequestReleasePause:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqSetFixedCamera:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Camera
+  GameSeqSetSequenceInitializeEnd:
+    Inputs:
+      Bool:
+        IsEnd: {default: false}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqTraverseBanc:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqWaitButtonInput:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Mock
+  GameSeqWaitCreatingActors:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSeqWaitFrameChangeState:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Mock
+  GameSeqWaitUIScreenLoading:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Framework
+  GameSetResultChangeState:
+    Inputs: {}
+    Tags:
+      - Func_Selector
+      - General
+  GameSoundStartDucking:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Sound
+  GameSoundStopDucking:
+    Inputs: {}
+    Tags:
+      - Sound
+      - Func_Action
+  SplAncientDocumentGetWindow:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplBoot:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Boot
+  SplCatalogViewer:
+    Inputs: {}
+    Tags:
+      - MainMenu
+      - Func_Action
+      - Misc
+  SplChangeSceneToPlaza:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplChangeSceneToShop:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplCloudSaveDeviceChangedSeq:
+    Inputs: {}
+    Tags:
+      - Online
+      - Func_Action
+  SplCoopBossAppearDemo:
+    Inputs: {}
+    Tags:
+      - Coop
+      - Func_Action
+  SplCoopBossRoundReady:
+    Inputs: {}
+    Tags:
+      - Coop
+      - Func_Action
+  SplCoopDropDemo:
+    Inputs: {}
+    Tags:
+      - Coop
+      - Func_Action
+  SplCoopDropDemoReady:
+    Inputs: {}
+    Tags:
+      - Coop
+      - Func_Action
+  SplCoopFinish:
+    Inputs: {}
+    Tags:
+      - Coop
+      - Func_Action
+  SplCoopGameClear:
+    Inputs: {}
+    Tags:
+      - Coop
+      - Func_Action
+  SplCoopGameClearFake:
+    Inputs: {}
+    Tags:
+      - Coop
+      - Func_Action
+  SplCoopGameOver:
+    Inputs: {}
+    Tags:
+      - Coop
+      - Func_Action
+  SplCoopResult:
+    Inputs: {}
+    Tags:
+      - Coop
+      - Func_Action
+  SplCoopRoundClear:
+    Inputs: {}
+    Tags:
+      - Coop
+      - Func_Action
+  SplCoopRoundPlay:
+    Inputs: {}
+    Tags:
+      - Coop
+      - Func_Action
+  SplCoopRoundPrepare:
+    Inputs: {}
+    Tags:
+      - Coop
+      - Func_Action
+  SplCoopRoundReady:
+    Inputs: {}
+    Tags:
+      - Coop
+      - Func_Action
+  SplCoopSelector:
+    Inputs: {}
+    Tags:
+      - Coop
+      - Func_Selector
+  SplCoopStageViewDemo:
+    Inputs: {}
+    Tags:
+      - Coop
+      - Func_Action
+  SplCustomize:
+    Inputs: {}
+    Tags:
+      - Customize
+      - Func_Action
+      - Misc
+  SplDayChange:
+    Inputs: {}
+    Tags:
+      - DayChange
+      - Func_Action
+  SplDevMissionCapture:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplFirstCloudSaveSeq:
+    Inputs: {}
+    Tags:
+      - Online
+      - Func_Action
+  SplIkuraShootTutorial:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Selector
+  SplInterpToSpectatorCamera:
+    Inputs: {}
+    Tags:
+      - Func_Action
+      - Camera
+  SplItemGetWindow:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplLastBoss02Failed:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Selector
+  SplLobbyCoopCashExchange:
+    Inputs: {}
+    Tags:
+      - LobbyCoop
+      - Func_Action
+  SplLobbyCoopKumasanRadioTalk:
+    Inputs: {}
+    Tags:
+      - LobbyCoop
+      - Func_Action
+  SplLobbyCoopLogin:
+    Inputs: {}
+    Tags:
+      - LobbyCoop
+      - Func_Action
+  SplLobbyCoopManual:
+    Inputs: {}
+    Tags:
+      - LobbyCoop
+      - Func_Action
+  SplLobbyCoopProgress:
+    Inputs: {}
+    Tags:
+      - LobbyCoop
+      - Func_Action
+  SplLobbyCoopResultReward:
+    Inputs: {}
+    Tags:
+      - LobbyCoop
+      - Func_Action
+  SplLobbyCoopRewardMeter:
+    Inputs: {}
+    Tags:
+      - LobbyCoop
+      - Func_Action
+  SplLobbyCoopSelector:
+    Inputs: {}
+    Tags:
+      - LobbyCoop
+      - Func_Selector
+  SplLobbyCoopShiftBoard:
+    Inputs: {}
+    Tags:
+      - LobbyCoop
+      - Func_Action
+  SplLobbyCoopStatsDeviceMenu:
+    Inputs: {}
+    Tags:
+      - LobbyCoop
+      - Func_Action
+  SplLobbyCoopTutorial:
+    Inputs: {}
+    Tags:
+      - LobbyCoop
+      - Func_Selector
+  SplLobbyCoopWeaponChanger:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyDisconnect:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyInkReset:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyLocalLogin:
+    Inputs: {}
+    Tags:
+      - LobbyLocal
+      - Func_Action
+  SplLobbyLocalPreProgress:
+    Inputs: {}
+    Tags:
+      - LobbyLocal
+      - Func_Action
+  SplLobbyLocalProgress:
+    Inputs: {}
+    Tags:
+      - LobbyLocal
+      - Func_Action
+  SplLobbyLocalResultReward:
+    Inputs: {}
+    Tags:
+      - LobbyLocal
+      - Func_Action
+  SplLobbyLocalSelector:
+    Inputs: {}
+    Tags:
+      - LobbyLocal
+      - Func_Selector
+  SplLobbyLocker:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyLockerCheckSaveData:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyLockerEdit:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyLockerFirstAccess:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyLockerLevelUp:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyLockerToProgress:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyMatchFix:
+    Inputs:
+      Bool:
+        is_coop: {default: false}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyMatchMenu:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyMatchMenuCameraFollow:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyMatchMenuPlayerTurn:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyMiniGameInGame:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyMiniGameMenu:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyMiniGameSeatConfirm:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyMiniGameSeatSelector:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Selector
+  SplLobbyMiniGameSitDown:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyMiniGameSitting:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyMiniGameSpectate:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyMiniGameStandUp:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyNotificationNpc:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyResultPre:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbySkinChanger:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyToLocker:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyVersusHeavenlyVoice:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplLobbyVersusJukeboxReq:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplLobbyVersusJukeboxSeq:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplLobbyVersusKiosk:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplLobbyVersusLockerLocked:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplLobbyVersusLogin:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplLobbyVersusLot:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplLobbyVersusPlayEventAndSave:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplLobbyVersusPlayerDeviceMenu:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplLobbyVersusProgress:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplLobbyVersusResultReward:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplLobbyVersusSelector:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplLobbyVersusTipsTalk:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplLobbyWait:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplLobbyWaitMatchHelper:
+    Inputs: {}
+    Tags:
+      - Lobby
+      - Func_Action
+  SplMainMenu:
+    Inputs: {}
+    Tags:
+      - MainMenu
+      - Func_Selector
+  SplMainMenuPlayerMakeConfirm:
+    Inputs: {}
+    Tags:
+      - MainMenu
+      - Func_Action
+  SplMainMenuRememberConfirm:
+    Inputs: {}
+    Tags:
+      - MainMenu
+      - Func_Action
+  SplMainMenuWalkThrough:
+    Inputs: {}
+    Tags:
+      - MainMenu
+      - Func_Action
+  SplManualGadget:
+    Inputs: {}
+    Tags:
+      - MainMenu
+      - Func_Action
+      - Misc
+  SplManualSeq:
+    Inputs: {}
+    Tags:
+      - Misc
+      - Func_Action
+  SplMiniGameDeckEditor:
+    Inputs: {}
+    Tags:
+      - MiniGame
+      - Func_Action
+      - Misc
+  SplMiniGameGadget:
+    Inputs: {}
+    Tags:
+      - MiniGame
+      - Func_Action
+      - Misc
+  SplMissionChallengeFailure:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplMissionCourseInDemo:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplMissionFirstCraterCamera:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplMissionFirstPlayerMake:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplMissionFirstSkyCamera:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplMissionGameOver:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplMissionGoalDemo:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplMissionIkuraShootTutorialProgress:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplMissionPauseMenu:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplMissionPlayDemo:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplMissionPlayerDie:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplMissionProgress:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplMissionSelector:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Selector
+  SplMissionSupplyWeapon:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplMissionTicketGateAction:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplNamePlateEditor:
+    Inputs: {}
+    Tags:
+      - MainMenu
+      - Func_Action
+      - Misc
+  SplNetworkErrorSelector:
+    Inputs: {}
+    Tags:
+      - Online
+      - Func_Selector
+  SplNewsSelector:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Selector
+  SplNewsSetupImm:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPhotoAlbumViewer:
+    Inputs: {}
+    Tags:
+      - MainMenu
+      - Func_Action
+      - Misc
+  SplPhotograph:
+    Inputs: {}
+    Tags:
+      - Photograph
+      - Func_Action
+      - Misc
+  SplPlayerDemoFadeIn:
+    Inputs: {}
+    Tags:
+      - Misc
+      - Func_Action
+  SplPlayerDemoFadeOut:
+    Inputs: {}
+    Tags:
+      - Misc
+      - Func_Action
+  SplPlayerMakeSelector:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Selector
+  SplPlayerWorldAppear:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Action
+  SplPlazaAcquireBigRunReward:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaAcquireFestShell:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaAmiibo:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaCanolaReportSeq:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaFestVote:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaIntroStation:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaMiniGameChara:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaMiniGameSelector:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaMiniGameTalkMother:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaMove:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaNews:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaNewsFromProgress:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaNewsToProgress:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaNpcFocus:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaNpcFromProgress:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaOekaki:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaOutOfService:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaPreProgress:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaProgress:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaSeasonReset:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaSelector:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Selector
+  SplPlazaSubSeqEnd:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaSubSeqStart:
+    Inputs:
+      Bool:
+        IsSkipFade: {default: false}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaSubSeqStartImm:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaThanksForEve:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaTitle:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaTitleSelector:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Selector
+  SplPlazaVendor:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPlazaWalkSingleSelector:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Selector
+  SplPlazaWalkThrough:
+    Inputs: {}
+    Tags:
+      - Plaza
+      - Func_Action
+  SplPostCreateActors:
+    Inputs: {}
+    Tags:
+      - Framework
+      - Func_Action
+  SplProcessReset:
+    Inputs: {}
+    Tags:
+      - Framework
+      - Func_Action
+  SplSdodrChallengeFailure:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrChangePalette:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrChangeScene:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrCoinLocker:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrCourseInDemo:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrElevatorAfterResultDemo:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrElevatorMenu:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrElevatorSelector:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrElevatorTalk:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrElevatorToStageDemo:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrElevatorWaitSceneFader:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrEnemyCheki:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrFleaMarket:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrFloorShop:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrGoalDemo:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrHacking:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrHeroMenu:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrIidaDevelopLog:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrPlayDemo:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrPlayerMake:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrPostBattleTutorial:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrPostStaffRoll:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrPreBattleTutorial:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrRebootDemo:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrRespawnReset:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrSelectRemind:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrStaffRollSelector:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrStageConfirmRetire:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrStagePlayerDie:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrStageProgress:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrStageResult:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrStageSelector:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrSuspendMenu:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrTipCheki:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrToTowerTryResultSuccess:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrTowerTryResult:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrViewPalette:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrWorldEnter:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Selector
+  SplSdodrWorldEnterGetWindow:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrWorldFirstClearPaletteTalk:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrWorldPlayerDie:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrWorldProgress:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplSdodrWorldSelector:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Selector
+  SplSeqChangeScene:
+    Inputs:
+      String:
+        NextSceneName: {default: ''}
+    Tags:
+      - Func_Action
+  SplShootingRangePauseMenu:
+    Inputs: {}
+    Tags:
+      - ShootingRange
+      - Func_Action
+  SplShootingRangeProgress:
+    Inputs: {}
+    Tags:
+      - ShootingRange
+      - Func_Action
+  SplShootingRangeSelector:
+    Inputs: {}
+    Tags:
+      - ShootingRange
+      - Func_Selector
+  SplShopGear:
+    Inputs: {}
+    Tags:
+      - Shop
+      - Func_Action
+  SplShopGoods:
+    Inputs: {}
+    Tags:
+      - Shop
+      - Func_Action
+  SplShopRotate:
+    Inputs: {}
+    Tags:
+      - Shop
+      - Func_Action
+  SplShopSelector:
+    Inputs: {}
+    Tags:
+      - Shop
+      - Func_Selector
+  SplShopWeapon:
+    Inputs: {}
+    Tags:
+      - Shop
+      - Func_Action
+  SplStaffRollPostEvent:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplSystemFinalize:
+    Inputs: {}
+    Tags:
+      - Framework
+      - Func_Action
+  SplSystemInitialize:
+    Inputs: {}
+    Tags:
+      - Framework
+      - Func_Action
+  SplTipsTrialProgress:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplTipsTrialRestore:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplTipsTrialSetup:
+    Inputs: {}
+    Tags:
+      - LobbyVersus
+      - Func_Action
+  SplTutorialChaseBuddy:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Action
+  SplTutorialProgress:
+    Inputs: {}
+    Tags:
+      - Misc
+      - Func_Action
+  SplTutorialSelector:
+    Inputs: {}
+    Tags:
+      - Mission
+      - Func_Selector
+  SplUICmnSystemWindow:
+    Inputs:
+      String:
+        LabelName: {default: ''}
+        MstxtName: {default: ''}
+    Tags:
+      - SplUI
+      - Func_Action
+      - UI
+  SplUIEndFader:
+    Inputs: {}
+    Tags:
+      - SplUI
+      - Func_Action
+      - UI
+  SplUISdodrEndFader:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplUISdodrStartFader:
+    Inputs: {}
+    Tags:
+      - Sdodr
+      - Func_Action
+  SplUIStartFader:
+    Inputs: {}
+    Tags:
+      - SplUI
+      - Func_Action
+      - UI
+  SplVersusBeforeGameSelector:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Selector
+  SplVersusFreeTest:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplVersusFriendStandby:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplVersusGameEndCapture:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplVersusGameEndFadeOut:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplVersusGameEndFinishTape:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplVersusGameEndSelector:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Selector
+  SplVersusGameSelector:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Selector
+  SplVersusInGame:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplVersusInGameSelector:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Selector
+  SplVersusModeSelect:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplVersusNoContest:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplVersusOppositeStandby:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplVersusReady:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplVersusResultJudge:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplVersusResultSelector:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Selector
+  SplVersusResultWinners:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplVersusStageView:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplVersusWalkThroughPauseMenu:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplVersusWalkThroughProgress:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplVersusWalkThroughSelector:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Selector
+  SplVersusWalkThroughToProgress:
+    Inputs: {}
+    Tags:
+      - Versus
+      - Func_Action
+  SplWorldAgent3Make:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Action
+  SplWorldChangeAreaDokanWarp:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Action
+  SplWorldConfirmUseTreasure:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Action
+  SplWorldEnter:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Selector
+  SplWorldGreatKebaInk:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Selector
+  SplWorldHeroMenu:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Action
+  SplWorldHeroMenuAlternaLog:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Action
+  SplWorldHeroMenuMisteryFile:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Action
+  SplWorldLaunchPadRemainder:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Action
+  SplWorldLotteryDrone:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Action
+  SplWorldLotteryDroneImpl:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Action
+  SplWorldNoChangeAreaDokanWarp:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Action
+  SplWorldPlayerDie:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Action
+  SplWorldProgress:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Action
+      - Mission
+  SplWorldResult:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Action
+  SplWorldSelector:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Selector
+  SplWorldSmallWorldReminder:
+    Inputs: {}
+    Tags:
+      - World
+      - Func_Action
