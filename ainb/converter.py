@@ -8,7 +8,8 @@ import sys
 import os
 
 def ainb_to_json(filepath, outdir=""): # Converts input AINB file to JSON
-    outdir = os.path.dirname(filepath)
+    if(outdir == ""):
+        outdir = os.path.dirname(filepath)
     with open(filepath, 'rb') as file:
         data = file.read()
     file = ainb.AINB(data)
