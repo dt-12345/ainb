@@ -11212,3 +11212,5 @@ _LocalModule_ffa16b344754.module
 executeDebugEntryString
 forestGiant.action.Struggle.module
 lizalfos.action.jumpattack.module
+GameScene_StartCommon.module
+GameScene_ExitCommon.module
