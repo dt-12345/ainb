@@ -21,6 +21,7 @@ def convert(file):
     JsonPath = current_dir + "\\" + filename[0:-4] + "json"
     filename = filename[0:-4]
 
+
     # Open the JSON file
     with open(JsonPath, encoding="utf8") as data:
         # Load the JSON data into a Python dictionary
