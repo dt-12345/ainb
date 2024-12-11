@@ -776,17 +776,13 @@ class AINB:
                     self.stream.seek(offset)
                     info = {}
                     info["Node Index"] = self.stream.read_u32()
-                    if i in [0, 4, 5]:
-                        info["Parameter"] = self.string_pool.read_string(self.stream.read_u32())
-                    if i == 2:
+                    if i == 0:
+                        info["Link Name"] = self.string_pool.read_string(self.stream.read_u32())
+                    elif i in [0, 2, 4, 5]:
                         ref = self.string_pool.read_string(self.stream.read_u32())
-                        if ref != '':
-                            if entry["Node Type"] == "Element_BoolSelector":
-                                info["Condition"] = ref
-                            else:
-                                info["Connection Name"] = ref
-                        else:
-                            is_end = bool(offsets.index(offset) == len(offsets) - 1)
+                        info["Link Name"] = ref
+                        if entry["Node Type"] in ["Element_S32Selector", "Element_F32Selector", "Element_StringSelector", "Element_RandomSelector"]:
+                            is_end = bool(offsets.index(offset) == len(offsets) - 1) and i == 2
                             if entry["Node Type"] == "Element_S32Selector":
                                 index = self.stream.read_s16()
                                 flag = self.stream.read_u16() >> 15 # Is valid index
@@ -818,8 +814,6 @@ class AINB:
                                     info["Condition"] = self.string_pool.read_string(self.stream.read_u32())
                             elif entry["Node Type"] == "Element_RandomSelector":
                                 info["Probability"] = self.stream.read_f32()
-                            else:
-                                info["Connection Name"] = ref
                     if i == 3:
                         update_index = self.stream.read_u32()
                         info["Update Info"] = self.resident_update_array[update_index]
@@ -1201,14 +1195,29 @@ class AINB:
                     current = start + total * 4
                     i = 0
                     for connection in node["Linked Nodes"]:
-                        if connection == "Bool/Float Input Link and Output Link":
+                        if connection == "Resident Update Link":
                             for entry in node["Linked Nodes"][connection]:
                                 buffer.write(u32(current))
                                 pos = buffer.tell()
                                 buffer.seek(current)
                                 buffer.write(u32(entry["Node Index"]))
-                                buffer.add_string(entry["Parameter"])
-                                buffer.write(u32(buffer._string_refs[entry["Parameter"]]))
+                                residents.append(entry["Update Info"])
+                                buffer.write(u32(len(residents) - 1))
+                                current += 8
+                                if "Is Removed at Runtime" in entry:
+                                    replacements.append((0, node["Node Index"], i))
+                                elif "Replacement Node Index" in entry:
+                                    replacements.append((1, node["Node Index"], i, entry["Replacement Node Index"]))
+                                i += 1
+                                buffer.seek(pos)
+                        elif connection == "Bool/Float Input Link and Output Link":
+                            for entry in node["Linked Nodes"][connection]:
+                                buffer.write(u32(current))
+                                pos = buffer.tell()
+                                buffer.seek(current)
+                                buffer.write(u32(entry["Node Index"]))
+                                buffer.add_string(entry["Link Name"])
+                                buffer.write(u32(buffer._string_refs[entry["Link Name"]]))
                                 buffer.seek(pos)
                                 is_input = False
                                 if "Selector" in node["Node Type"] or node["Node Type"] == "Element_Expression":
@@ -1222,7 +1231,7 @@ class AINB:
                                 elif node["Node Type"] == "Element_Expression" and "Output Parameters" in node:
                                     if "vec3f" in node["Output Parameters"]:
                                         for parameter in node["Output Parameters"]["vec3f"]:
-                                            if entry["Parameter"] == parameter["Name"]:
+                                            if entry["Link Name"] == parameter["Name"]:
                                                 current += 24
                                 else:
                                     current += 8
@@ -1231,15 +1240,15 @@ class AINB:
                                 elif "Replacement Node Index" in entry:
                                     replacements.append((1, node["Node Index"], i, entry["Replacement Node Index"]))
                                 i += 1
-                        elif connection == "Standard Link":
+                        else:
                             for entry in node["Linked Nodes"][connection]:
+                                buffer.write(u32(current))
+                                pos = buffer.tell()
+                                buffer.seek(current)
+                                buffer.write(u32(entry["Node Index"]))
+                                buffer.add_string(entry["Link Name"])
+                                buffer.write(u32(buffer._string_refs[entry["Link Name"]]))
                                 if node["Node Type"] == "Element_F32Selector":
-                                    buffer.write(u32(current))
-                                    pos = buffer.tell()
-                                    buffer.seek(current)
-                                    buffer.write(u32(entry["Node Index"]))
-                                    buffer.add_string("")
-                                    buffer.write(u32(buffer._string_refs[""]))
                                     if "Input" in entry:
                                         buffer.write(u32(self.global_params["float"].index(entry["Input"]) | (1 << 31)))
                                     else:
@@ -1254,15 +1263,8 @@ class AINB:
                                         buffer.write(f32(entry["Condition Max"]))
                                     else:
                                         buffer.write(u32(0))
-                                    buffer.seek(pos)
                                     current += 40
                                 elif node["Node Type"] in ["Element_StringSelector", "Element_S32Selector", "Element_RandomSelector"]:
-                                    buffer.write(u32(current))
-                                    pos = buffer.tell()
-                                    buffer.seek(current)
-                                    buffer.write(u32(entry["Node Index"]))
-                                    buffer.add_string("")
-                                    buffer.write(u32(buffer._string_refs[""]))
                                     if "Input" in entry:
                                         if node["Node Type"] == "Element_StringSelector":
                                             buffer.write(u32(self.global_params["string"].index(entry["Input"]) | (1 << 31)))
@@ -1286,71 +1288,17 @@ class AINB:
                                     elif "その他" in entry:
                                         buffer.add_string("その他")
                                         buffer.write(u32(buffer._string_refs["その他"]))
-                                    buffer.seek(pos)
                                     current += 16
-                                else:
-                                    buffer.write(u32(current))
-                                    pos = buffer.tell()
-                                    buffer.seek(current)
-                                    buffer.write(u32(entry["Node Index"]))
-                                    if "Connection Name" in entry:
-                                        buffer.add_string(entry["Connection Name"])
-                                        buffer.write(u32(buffer._string_refs[entry["Connection Name"]]))
-                                    elif "Condition" in entry:
-                                        buffer.add_string(entry["Condition"])
-                                        buffer.write(u32(buffer._string_refs[entry["Condition"]]))
-                                    buffer.seek(pos)
-                                    current += 8
-                                if "Is Removed at Runtime" in entry:
-                                    replacements.append((0, node["Node Index"], i))
-                                elif "Replacement Node Index" in entry:
-                                    replacements.append((1, node["Node Index"], i, entry["Replacement Node Index"]))
-                                i += 1
-                        elif connection != "Resident Update Link":
-                            for entry in node["Linked Nodes"][connection]:
-                                buffer.write(u32(current))
-                                pos = buffer.tell()
-                                buffer.seek(current)
-                                buffer.write(u32(entry["Node Index"]))
-                                if "Condition" in entry:
-                                    buffer.add_string(entry["Condition"])
-                                    buffer.write(u32(buffer._string_refs[entry["Condition"]]))
-                                elif "Parameter" in entry:
-                                    buffer.add_string(entry["Parameter"])
-                                    buffer.write(u32(buffer._string_refs[entry["Parameter"]]))
-                                else:
-                                    buffer.add_string(entry["Connection Name"])
-                                    buffer.write(u32(buffer._string_refs[entry["Connection Name"]]))
-                                if "Input" in entry:
-                                    if node["Node Type"] == "Element_StringSelector":
-                                        buffer.write(u32(self.global_params["string"].index(entry["Input"]) | (1 << 31)))
-                                    elif node["Node Type"] == "Element_S32Selector":
-                                        buffer.write(u32(self.global_params["int"].index(entry["Input"]) | (1 << 31)))
-                                buffer.seek(pos)
-                                if "Selector" in node["Node Type"] or node["Node Type"] == "Element_Expression":
+                                elif node["Node Type"] == "Element_Expression":
                                     current += 16
                                 else:
                                     current += 8
-                                if "Is Removed at Runtime" in entry:
-                                    replacements.append((0, node["Node Index"], i))
-                                elif "Replacement Node Index" in entry:
-                                    replacements.append((1, node["Node Index"], i, entry["Replacement Node Index"]))
-                                i += 1
-                        else:
-                            for entry in node["Linked Nodes"][connection]:
-                                buffer.write(u32(current))
-                                pos = buffer.tell()
-                                buffer.seek(current)
-                                buffer.write(u32(entry["Node Index"]))
-                                residents.append(entry["Update Info"])
-                                buffer.write(u32(len(residents) - 1))
-                                current += 8
-                                if "Is Removed at Runtime" in entry:
-                                    replacements.append((0, node["Node Index"], i))
-                                elif "Replacement Node Index" in entry:
-                                    replacements.append((1, node["Node Index"], i, entry["Replacement Node Index"]))
-                                i += 1
                                 buffer.seek(pos)
+                                if "Is Removed at Runtime" in entry:
+                                    replacements.append((0, node["Node Index"], i))
+                                elif "Replacement Node Index" in entry:
+                                    replacements.append((1, node["Node Index"], i, entry["Replacement Node Index"]))
+                                i += 1
                     buffer.seek(current)
                 else:
                     for i in range(5):
