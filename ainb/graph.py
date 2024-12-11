@@ -95,7 +95,7 @@ def graph(filepath, recurse=False, parent_id=None, dot=None, index=None):
                             elif "Condition Min" in node:
                                 iter_node(node["Node Index"], id, "Min: " + str(node["Condition Min"]) + " | Max: " + str(node["Condition Max"]), already_seen)
                             else:
-                                iter_node(node["Node Index"], id, node["Connection Name"], already_seen)
+                                iter_node(node["Node Index"], id, node["Link Name"], already_seen)
                     else:
                         ids = [id]
                         for node in data["Nodes"][node_index]["Linked Nodes"]["Standard Link"]:
@@ -105,13 +105,13 @@ def graph(filepath, recurse=False, parent_id=None, dot=None, index=None):
                         iter_node(node["Node Index"], id, "Resident Update", already_seen)
                 if "Bool/Float Input Link and Output Link" in data["Nodes"][node_index]["Linked Nodes"]:
                     for node in data["Nodes"][node_index]["Linked Nodes"]["Bool/Float Input Link and Output Link"]:
-                        iter_node(node["Node Index"], id, node["Parameter"], already_seen, precon=True)
+                        iter_node(node["Node Index"], id, node["Link Name"], already_seen, precon=True)
                 if "Int Input Link" in data["Nodes"][node_index]["Linked Nodes"]:
                     for node in data["Nodes"][node_index]["Linked Nodes"]["Int Input Link"]:
-                        iter_node(node["Node Index"], id, node["Parameter"], already_seen, precon=True)
+                        iter_node(node["Node Index"], id, node["Link Name"], already_seen, precon=True)
                 if "String Input Link" in data["Nodes"][node_index]["Linked Nodes"]:
                     for node in data["Nodes"][node_index]["Linked Nodes"]["String Input Link"]:
-                        iter_node(node["Node Index"], id, node["Parameter"], already_seen, precon=True)
+                        iter_node(node["Node Index"], id, node["Link Name"], already_seen, precon=True)
             return id
         elif node_index < len(data["Nodes"]):
             if origin_id != None:
