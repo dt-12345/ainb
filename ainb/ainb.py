@@ -778,7 +778,7 @@ class AINB:
                     info["Node Index"] = self.stream.read_u32()
                     if i == 0:
                         info["Link Name"] = self.string_pool.read_string(self.stream.read_u32())
-                    elif i in [0, 2, 4, 5]:
+                    elif i in [2, 4, 5]:
                         ref = self.string_pool.read_string(self.stream.read_u32())
                         info["Link Name"] = ref
                         if entry["Node Type"] in ["Element_S32Selector", "Element_F32Selector", "Element_StringSelector", "Element_RandomSelector"]:
@@ -814,6 +814,9 @@ class AINB:
                                     info["Condition"] = self.string_pool.read_string(self.stream.read_u32())
                             elif entry["Node Type"] == "Element_RandomSelector":
                                 info["Probability"] = self.stream.read_f32()
+                        elif entry["Name"] == "SelectorBSABrainVerbUpdater": # hmm
+                            info["Unknown 1"] = self.stream.read_u32()
+                            info["Unknown 2"] = self.stream.read_u32()
                     if i == 3:
                         update_index = self.stream.read_u32()
                         info["Update Info"] = self.resident_update_array[update_index]
@@ -1290,6 +1293,10 @@ class AINB:
                                         buffer.write(u32(buffer._string_refs["その他"]))
                                     current += 16
                                 elif node["Node Type"] == "Element_Expression":
+                                    current += 16
+                                elif node["Name"] == "SelectorBSABrainVerbUpdater":
+                                    buffer.write(u32(entry["Unknown 1"]))
+                                    buffer.write(u32(entry["Unknown 2"]))
                                     current += 16
                                 else:
                                     current += 8
