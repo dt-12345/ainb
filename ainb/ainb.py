@@ -814,7 +814,7 @@ class AINB:
                                     info["Condition"] = self.string_pool.read_string(self.stream.read_u32())
                             elif entry["Node Type"] == "Element_RandomSelector":
                                 info["Probability"] = self.stream.read_f32()
-                        elif entry["Name"] == "SelectorBSABrainVerbUpdater": # hmm
+                        elif entry["Name"] in ["SelectorBSABrainVerbUpdater", "SelectorBSAFormChangeUpdater"]: # hmm
                             info["Unknown 1"] = self.stream.read_u32()
                             info["Unknown 2"] = self.stream.read_u32()
                     if i == 3:
@@ -1294,7 +1294,7 @@ class AINB:
                                     current += 16
                                 elif node["Node Type"] == "Element_Expression":
                                     current += 16
-                                elif node["Name"] == "SelectorBSABrainVerbUpdater":
+                                elif node["Name"] in ["SelectorBSABrainVerbUpdater", "SelectorBSAFormChangeUpdater"]:
                                     buffer.write(u32(entry["Unknown 1"]))
                                     buffer.write(u32(entry["Unknown 2"]))
                                     current += 16
