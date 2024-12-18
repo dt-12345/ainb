@@ -175,7 +175,7 @@ for JsonNode in data["Nodes"]:
     subparamlist = []
     try:
         for type in JsonNode["Internal Parameters"]:
-            print(type)
+            print("")
             paramtypes.append(type)
             subparamlist = []
             for parameter in JsonNode["Internal Parameters"][type]:
@@ -187,7 +187,7 @@ for JsonNode in data["Nodes"]:
                 paramlist.append(subparamlist)
         CurrentNode.addParams(paramtypes,paramlist)
     except KeyError:
-        print("fyck you")
+        print()
 
 
     paramtypes = []
@@ -195,7 +195,7 @@ for JsonNode in data["Nodes"]:
     subparamlist = []
     try:
         for type in JsonNode["Output Parameters"]:
-            print(type)
+            print("")
             paramtypes.append(type)
             subparamlist = []
             for parameter in JsonNode["Output Parameters"][type]:
@@ -207,14 +207,14 @@ for JsonNode in data["Nodes"]:
                 paramlist.append(subparamlist)
         CurrentNode.addoutParams(paramtypes,paramlist)
     except KeyError:
-        print("fyck you2")
+        print()
 
     paramtypes = []
     paramlist = []
     subparamlist = []
     try:
         for type in JsonNode["Input Parameters"]:
-            print(type)
+            print("")
             paramtypes.append(type)
             subparamlist = []
             namelist = []
@@ -252,14 +252,14 @@ for JsonNode in data["Nodes"]:
         CurrentNode.addinParams(paramtypes,paramlist,namelist)
         
     except KeyError:
-        print("fyck you3")
+        print()
 
     paramtypes = []
     paramlist = []
     subparamlist = []
     try:
         for type in JsonNode["Linked Nodes"]:
-            print(type)
+            print("")
             paramtypes.append(type)
             subparamlist = []
             for parameter in JsonNode["Linked Nodes"][type]:
@@ -268,7 +268,7 @@ for JsonNode in data["Nodes"]:
                 paramlist.append(subparamlist)
         CurrentNode.addLinks(paramtypes,paramlist)
     except KeyError:
-        print("fyck you4")
+        print()
 
     Nodelist.append( CurrentNode )
 for Nodule in Nodelist:
@@ -293,6 +293,7 @@ for node in Nodelist:
                 print()
                 print(node.links.paramlist)
                 print("\n")
+                startpoints.append(node.index)
         except AttributeError:
             print("",end="")
 
