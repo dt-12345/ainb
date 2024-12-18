@@ -4,6 +4,13 @@ import os
 import time
 import tkinter
 Nodelist = []
+def clear_screen():
+    # For Windows
+    if os.name == 'nt':
+        _ = os.system('cls')
+    # For macOS and Linux
+    else:
+        _ = os.system('clear')
 
 class InternalParams:
         paramlist = [[]]
@@ -17,7 +24,7 @@ class InternalParams:
             i=0
             for paramtype in self.paramtypes:
                 
-                output += "    " + paramtype +"\n"
+                output += "    " + str(paramtype) +"\n"
                 for param in self.paramlist[i]:
                     subout += "    " +str(param)+"\n"
                 subout+=","
@@ -38,7 +45,7 @@ class OutParams:
         i=0
         for paramtype in self.paramtypes:
             
-            output += "    " + paramtype +"\n"
+            output += "    " + str(paramtype) +"\n"
             for param in self.paramlist[i]:
                 subout += "    " +str(param)+"\n"
             subout+=","
@@ -61,7 +68,7 @@ class InParams:
         i=0
         for paramtype in self.paramtypes:
             
-            output += "    " + paramtype +"\n"
+            output += "    " + str(paramtype) +"\n"
             for param in self.paramlist[i]:
                 subout += "    " +self.names[i] +": "+ str(param)+"\n"
                 i+=1
@@ -82,8 +89,8 @@ class LinkedNodes:
         subout=""
         i=0
         for paramtype in self.paramtypes:
-            
-            output += "    " + paramtype +"\n"
+            print(paramtype)
+            output += "    " + str(paramtype) +"\n"
             for param in self.paramlist[i]:
                 subout += "    " +str(param)+"\n"
             subout+=","
@@ -91,17 +98,31 @@ class LinkedNodes:
         output += "Parameters : \n" + subout
         
         return(output)
+    def GrabOutIndices(self):
+        output = ""
+        for i in range(len(self.paramtypes)):
+            output += str(self.paramlist[i][0]) + ","
+        return output
+    def GrabOutTypes(self):
+        output = ""
+        for i in range(len(self.paramtypes) + 1):
+            output += str(self.paramlist[i][1]) + "\n"
+        return output
 
 class Node:
     index=0
+    guid = ""
     name = ""
     nickname = ""
     parameters = []
     parameters = []
-    def __init__(self,index,name):
+    def getInternalParamTypes(self):
+        return InternalParams.paramlist
+
+    def __init__(self,index,name,guid):
         self.index = index
         self.name = name
-
+        self.guid = guid
     def Change_nickname(self, NewNick):
 
         self.nickname= NewNick
@@ -115,7 +136,6 @@ class Node:
 
     def addoutParams(self, Paramtypes,params):
         self.oparameters = OutParams(Paramtypes,params)
-
     def printstuff(self,donext = False):
         print("Index: " + str(self.index))
         print("Name: " + self.nickname +"/"+ self.name)
@@ -153,32 +173,31 @@ class Node:
        
 
 
-
-print("Filepath?\n")
-#with open(input(">> "), 'r', encoding='utf-8') as file:
-with open("C:\\Users\\brend\\OneDrive\\Documents\\GitHub\\ainb\\takoHouse_ff63.logic.root.json", 'r', encoding='utf-8') as file:
+print("Filepath?")
+filepath = input(">> ")
+with open(filepath, 'r', encoding='utf-8') as file:
     data = json.load(file)
 try:
     data["Info"]
 except KeyError:
     raise KeyError("That's not an ainb JSON, you bozo ◔̯◔ How about we try again but you give me the right file? :3")
-
+    
 def Change_nickname( original, NewNick):
         for node in Nodelist:
             if node.index == original:
                 node.nickname = NewNick
 
 for JsonNode in data["Nodes"]:
-    CurrentNode = Node(JsonNode["Node Index"],JsonNode["Name"])
+    CurrentNode = Node(JsonNode["Node Index"],JsonNode["Name"],JsonNode["GUID"])
     paramtypes = []
     paramlist = []
     subparamlist = []
     try:
-        for type in JsonNode["Internal Parameters"]:
+        for Type in JsonNode["Internal Parameters"]:
             print("")
-            paramtypes.append(type)
+            paramtypes.append(Type)
             subparamlist = []
-            for parameter in JsonNode["Internal Parameters"][type]:
+            for parameter in JsonNode["Internal Parameters"][Type]:
                 subparamlist.append(parameter["Name"])
                 try:
                     subparamlist.append(parameter["Value"])
@@ -194,11 +213,11 @@ for JsonNode in data["Nodes"]:
     paramlist = []
     subparamlist = []
     try:
-        for type in JsonNode["Output Parameters"]:
+        for Type in JsonNode["Output Parameters"]:
             print("")
-            paramtypes.append(type)
+            paramtypes.append(Type)
             subparamlist = []
-            for parameter in JsonNode["Output Parameters"][type]:
+            for parameter in JsonNode["Output Parameters"][Type]:
                 subparamlist.append(parameter["Name"])
                 try:
                     subparamlist.append(parameter["Class"])
@@ -213,12 +232,12 @@ for JsonNode in data["Nodes"]:
     paramlist = []
     subparamlist = []
     try:
-        for type in JsonNode["Input Parameters"]:
+        for Type in JsonNode["Input Parameters"]:
             print("")
-            paramtypes.append(type)
+            paramtypes.append(Type)
             subparamlist = []
             namelist = []
-        for parameter in JsonNode["Input Parameters"][type]:
+        for parameter in JsonNode["Input Parameters"][Type]:
                 for item in parameter:
                     subparamlist = []
                     namelist = []
@@ -258,11 +277,11 @@ for JsonNode in data["Nodes"]:
     paramlist = []
     subparamlist = []
     try:
-        for type in JsonNode["Linked Nodes"]:
+        for Type in JsonNode["Linked Nodes"]:
             print("")
             paramtypes.append(type)
             subparamlist = []
-            for parameter in JsonNode["Linked Nodes"][type]:
+            for parameter in JsonNode["Linked Nodes"][Type]:
                 subparamlist.append(parameter["Node Index"])
                 subparamlist.append(parameter["Parameter"])
                 paramlist.append(subparamlist)
@@ -293,11 +312,10 @@ for node in Nodelist:
                 print()
                 print(node.links.paramlist)
                 print("\n")
-                startpoints.append(node.index)
         except AttributeError:
             print("",end="")
 
-
+    
 while True:
     print("Name a command! (-h for help)")
     Input = input(">>")
@@ -307,7 +325,47 @@ while True:
         if Nodelist[index].nickname != "":
             print("Its current nickname is " + Nodelist[index].nickname)
         Change_nickname( index, input("New Nickname: "))
-    elif Input =="NodeI":
-        index = int(input("root ID: "))
-        print(Nodelist[index].printstuff())
-    time.sleep(0.02)
+    elif Input =="Nodes":
+        clear_screen()
+        while True:
+            
+            print("Enter next Index, or other option (-h)")
+            tmp = input("Index: ")
+            try:
+                index = int(tmp)
+                clear_screen()
+                print("name : " + (Nodelist[index].nickname if Nodelist[index].nickname!="" else Nodelist[index].name))
+                print("\nindex : " + str(Nodelist[index].index))
+                print("\ngui : " + Nodelist[index].guid)
+                try:
+                    print("\nOutput Nodes : " + Nodelist[index].links.GrabOutIndices())
+                except AttributeError:
+                    pass
+            except ValueError:
+                if tmp == "stop":
+                    break
+                elif tmp == "-h":
+                    print("""\ncommands for Node Viewer:
+    -h : help (duh)
+    stop : stop
+    types : lets you view the output types of a specific node output
+    True Name : Returns the name of the node, regardless of if it has a nickname.
+                (the name from earlier prefers nicknames over names when possible)
+    Nick : adds a node nickname
+                          """)
+                elif( type(index) !=int):
+                    print("\ninvalid command bro")
+                elif tmp == "True Name":
+                    print("\nActual Name : " + Nodelist[index].name)
+                elif tmp == "type":
+                    print("\noutput types(same order as output indices) :\n" + Nodelist[index].links.GrabOutTypes())
+                elif tmp =="Nick":
+                    Change_nickname( index, input("New Nickname: "))
+
+    elif Input =="Save":
+        save()
+                    
+
+                    
+            
+        time.sleep(0.02)
