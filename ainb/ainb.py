@@ -39,9 +39,9 @@ class Node_Type(Enum):
     Element_SplitTiming            = 500
 
 # User-Defined stores pointers to the corresponding structure/class
-type_standard = ["int", "bool", "float", "string", "vec3f", "userdefined"] # Data type order
+type_standard = ["int", "bool", "float", "string", "vec3f", "pointer"] # Data type order
 
-type_global = ["string", "int", "float", "bool", "vec3f", "userdefined"] # Data type order (global parameters)
+type_global = ["string", "int", "float", "bool", "vec3f", "pointer"] # Data type order (global parameters)
 
 file_category = {"AI" : 0, "Logic" : 1, "Sequence" : 2}
 
@@ -152,10 +152,10 @@ class AINB:
                     self.attachment_parameters.append(self.AttachmentEntry())
                 for param in self.attachment_parameters:
                     self.stream.seek(param["Offset"])
-                    param["Parameters"] = self.AttachmentParameters()
+                    param["Properties"] = self.AttachmentParameters()
                     del param["Offset"]
-                    if not(param["Parameters"]):
-                        del param["Parameters"]
+                    if not(param["Properties"]):
+                        del param["Properties"]
                 
                 self.attachment_array = [] # This is the array nodes are referencing for attachments
                 self.stream.seek(self.attachment_index_offset)
@@ -182,7 +182,7 @@ class AINB:
                         self.output_parameters[type_standard[i]].append(self.OutputEntry(type_standard[i]))
                 if not(self.output_parameters[type_standard[i]]):
                     del self.output_parameters[type_standard[i]]
-            self.io_parameters = {"Input Parameters" : self.input_parameters, "Output Parameters" : self.output_parameters}
+            self.io_parameters = {"Inputs" : self.input_parameters, "Outputs" : self.output_parameters}
 
             # Multi-Parameters
             for type in self.input_parameters:
@@ -205,7 +205,7 @@ class AINB:
                     self.stream.seek(offset)
                     self.resident_update_array.append(self.ResidentEntry())
 
-            # Precondition Nodes
+            # Queries
             self.stream.seek(self.precondition_offset)
             self.precondition_nodes = []
             if self.exb_offset != 0:
@@ -265,8 +265,8 @@ class AINB:
             if self.nodes:
                 # Match Entry Strings (purpose still unknown)
                 for entry in self.entry_strings:
-                    self.nodes[entry["Node Index"]]["Entry String"] = entry
-                    del self.nodes[entry["Node Index"]]["Entry String"]["Node Index"]
+                    self.nodes[entry["Node Index"]]["XLink Actions"] = entry
+                    del self.nodes[entry["Node Index"]]["XLink Actions"]["Node Index"]
 
             """
             Child Replacement
@@ -288,15 +288,15 @@ class AINB:
                     for replacement in self.replacements: # Don't actually replace the node, just leave a note
                         if replacement["Type"] == 0:
                             i = 0
-                            for type in self.nodes[replacement["Node Index"]]["Linked Nodes"]:
-                                for node in self.nodes[replacement["Node Index"]]["Linked Nodes"][type]:
+                            for type in self.nodes[replacement["Node Index"]]["Plugs"]:
+                                for node in self.nodes[replacement["Node Index"]]["Plugs"][type]:
                                     i += 0
                                     if i == replacement["Child Index"]:
                                         node["Is Removed at Runtime"] = True
                         if replacement["Type"] == 1:
                             i = 0
-                            for type in self.nodes[replacement["Node Index"]]["Linked Nodes"]:
-                                for node in self.nodes[replacement["Node Index"]]["Linked Nodes"][type]:
+                            for type in self.nodes[replacement["Node Index"]]["Plugs"]:
+                                for node in self.nodes[replacement["Node Index"]]["Plugs"][type]:
                                     if i == replacement["Child Index"]:
                                         node["Replacement Node Index"] = replacement["Replacement Index"]
                                     i += 1
@@ -320,47 +320,47 @@ class AINB:
             if "Nodes" in data:
                 self.nodes = data["Nodes"]
                 for node in self.nodes:
-                    if "Internal Parameters" in node:
-                        for type in node["Internal Parameters"]:
-                            for entry in node["Internal Parameters"][type]:
-                                if "Function" in entry:
-                                    self.functions[entry["EXB Index"]] = entry["Function"]
+                    if "Properties" in node:
+                        for type in node["Properties"]:
+                            for entry in node["Properties"][type]:
+                                if "Expression" in entry:
+                                    self.functions[entry["Expression Index"]] = entry["Expression"]
                                     self.exb_instances += 1
                                 if "Sources" in entry:
                                     for parameter in entry["Sources"]:
-                                        if "Function" in parameter:
-                                            self.functions[parameter["EXB Index"]] = parameter["Function"]
+                                        if "Expression" in parameter:
+                                            self.functions[parameter["Expression Index"]] = parameter["Expression"]
                                             self.exb_instances += 1
-                    if "Input Parameters" in node:
-                        for type in node["Input Parameters"]:
-                            for entry in node["Input Parameters"][type]:
-                                if "Function" in entry:
-                                    self.functions[entry["EXB Index"]] = entry["Function"]
+                    if "Inputs" in node:
+                        for type in node["Inputs"]:
+                            for entry in node["Inputs"][type]:
+                                if "Expression" in entry:
+                                    self.functions[entry["Expression Index"]] = entry["Expression"]
                                     self.exb_instances += 1
                                 if "Sources" in entry:
                                     for parameter in entry["Sources"]:
-                                        if "Function" in parameter:
-                                            self.functions[parameter["EXB Index"]] = parameter["Function"]
+                                        if "Expression" in parameter:
+                                            self.functions[parameter["Expression Index"]] = parameter["Expression"]
                                             self.exb_instances += 1
                     if "Attachments" in node:
                         for attachment in node["Attachments"]:
                             self.attachment_parameters.append(attachment)
-                            if "Parameters" in attachment:
-                                for type in attachment["Parameters"]:
-                                    for entry in attachment["Parameters"][type]:
-                                        if "Function" in entry:
-                                            self.functions[entry["EXB Index"]] = entry["Function"]
+                            if "Properties" in attachment:
+                                for type in attachment["Properties"]:
+                                    for entry in attachment["Properties"][type]:
+                                        if "Expression" in entry:
+                                            self.functions[entry["Expression Index"]] = entry["Expression"]
                                             self.exb_instances += 1
                                         if "Sources" in entry:
                                             for parameter in entry["Sources"]:
-                                                if "Function" in parameter:
-                                                    self.functions[parameter["EXB Index"]] = parameter["Function"]
+                                                if "Expression" in parameter:
+                                                    self.functions[parameter["Expression Index"]] = parameter["Expression"]
                                                     self.exb_instances += 1
 
             if "Commands" in data:
                 self.commands = data["Commands"]
-            if "Local Blackboard Parameters" in data:
-                self.global_params = data["Local Blackboard Parameters"]
+            if "Blackboard Parameters" in data:
+                self.global_params = data["Blackboard Parameters"]
             if self.functions:
                 self.exb = EXB(None, self.functions, from_dict)
                 i = len(self.functions)
@@ -384,7 +384,7 @@ class AINB:
         if self.commands:
             self.output_dict["Commands"] = self.commands
         if self.global_params:
-            self.output_dict["Local Blackboard Parameters"] = self.global_params
+            self.output_dict["Blackboard Parameters"] = self.global_params
         if self.ainb_array:
             self.output_dict["Modules"] = self.ainb_array
         if self.nodes:
@@ -436,7 +436,7 @@ class AINB:
             value = self.string_pool.read_string(self.stream.read_u32())
         if type == "vec3f":
             value = [self.stream.read_f32(), self.stream.read_f32(), self.stream.read_f32()]
-        if type == "userdefined":
+        if type == "pointer":
             value = None # Default values are not stored
         return value
 
@@ -485,7 +485,7 @@ class AINB:
     def ImmediateParameter(self, type):
         entry = {}
         entry["Name"] = self.string_pool.read_string(self.stream.read_u32())
-        if type == "userdefined":
+        if type == "pointer":
             entry["Class"] = self.string_pool.read_string(self.stream.read_u32())
         index = self.stream.read_u16()
         flags = self.stream.read_u16()
@@ -496,11 +496,11 @@ class AINB:
             if flags & 0x100:
                 entry["Flags"].append("Is Output")
             if (flags & 0xc200) == 0xc200:
-                entry["EXB Index"] = index
-                entry["Function"] = self.exb.commands[entry["EXB Index"]]
-                self.functions[entry["EXB Index"]] = entry["Function"]
+                entry["Expression Index"] = index
+                entry["Expression"] = self.exb.commands[entry["Expression Index"]]
+                self.functions[entry["Expression Index"]] = entry["Expression"]
             elif flags & 0x8000:
-                entry["Local Blackboard Index"] = index
+                entry["Blackboard Index"] = index
             if not(entry["Flags"]):
                 del entry["Flags"]
         # User-Defined types don't have values stored
@@ -520,11 +520,11 @@ class AINB:
         entry = {}
         entry["Name"] = self.string_pool.read_string(self.stream.read_u32())
         entry["Offset"] = self.stream.read_u32()
-        entry["EXB Function Count"] = self.stream.read_u16()
-        entry["EXB Input/Output Size"] = self.stream.read_u16()
+        entry["Expression Count"] = self.stream.read_u16()
+        entry["Expression Input/Output Size"] = self.stream.read_u16()
         if(self.version > 0x404):
             entry["Name Hash"] = hex(self.stream.read_u32()) # not present in v404
-        del entry["EXB Function Count"], entry["EXB Input/Output Size"]
+        del entry["Expression Count"], entry["Expression Input/Output Size"]
         if(self.version > 0x404):
             del entry["Name Hash"]
         return entry
@@ -555,13 +555,13 @@ class AINB:
     def InputEntry(self, type):
         entry = {}
         entry["Name"] = self.string_pool.read_string(self.stream.read_u32())
-        if type == "userdefined":
+        if type == "pointer":
             entry["Class"] = self.string_pool.read_string(self.stream.read_u32())
         entry["Node Index"] = self.stream.read_s16()
-        entry["Parameter Index"] = self.stream.read_s16()
+        entry["Output Index"] = self.stream.read_s16()
         if entry["Node Index"] <= -100 and entry["Node Index"] >= -8192:
             entry["Multi Index"] = -100 - entry["Node Index"]
-            entry["Multi Count"] = entry["Parameter Index"]
+            entry["Multi Count"] = entry["Output Index"]
         index = self.stream.read_u16()
         flags = self.stream.read_u16()
         if flags:
@@ -571,11 +571,11 @@ class AINB:
             if flags & 0x100:
                 entry["Flags"].append("Is Output")
             if (flags & 0xc200) == 0xc200:
-                entry["EXB Index"] = index
-                entry["Function"] = self.exb.commands[entry["EXB Index"]]
-                self.functions[entry["EXB Index"]] = entry["Function"]
+                entry["Expression Index"] = index
+                entry["Expression"] = self.exb.commands[entry["Expression Index"]]
+                self.functions[entry["Expression Index"]] = entry["Expression"]
             elif flags & 0x8000:
-                entry["Local Blackboard Index"] = index
+                entry["Blackboard Index"] = index
             if not(entry["Flags"]):
                 del entry["Flags"]
         if type == "string":
@@ -588,7 +588,7 @@ class AINB:
             entry["Value"] = bool(self.stream.read_u32())
         if type == "vec3f":
             entry["Value"] = [self.stream.read_f32(), self.stream.read_f32(), self.stream.read_f32()]
-        if type == "userdefined":
+        if type == "pointer":
             entry["Value"] = self.stream.read_u32()
         return entry
     
@@ -599,14 +599,14 @@ class AINB:
         flag = flags & 0x80000000
         if flag:
             entry["Is Output"] = True
-        if type == "userdefined":
+        if type == "pointer":
             entry["Class"] = self.string_pool.read_string(self.stream.read_u32())
         return entry
     
     def MultiEntry(self):
         entry = {}
         entry["Node Index"] = self.stream.read_u16()
-        entry["Parameter Index"] = self.stream.read_u16()
+        entry["Output Index"] = self.stream.read_u16()
         index = self.stream.read_u16()
         flags = self.stream.read_u16()
         if flags:
@@ -616,11 +616,11 @@ class AINB:
             if flags & 0x100:
                 entry["Flags"].append("Is Output")
             if (flags & 0xc200) == 0xc200:
-                entry["EXB Index"] = index
-                entry["Function"] = self.exb.commands[entry["EXB Index"]]
-                self.functions[entry["EXB Index"]] = entry["Function"]
+                entry["Expression Index"] = index
+                entry["Expression"] = self.exb.commands[entry["Expression Index"]]
+                self.functions[entry["Expression Index"]] = entry["Expression"]
             elif flags & 0x8000:
-                entry["Local Blackboard Index"] = index
+                entry["Blackboard Index"] = index
             if not(entry["Flags"]):
                 del entry["Flags"]
         return entry
@@ -630,7 +630,7 @@ class AINB:
         flags = self.stream.read_u32()
         entry["Flags"] = []
         if flags >> 31:
-            entry["Flags"].append("Update Post Current Command Calc")
+            entry["Flags"].append("Update Post Calc")
         if flags & 1:
             entry["Flags"].append("Is Valid Update")
         if "Is Valid Update" not in entry["Flags"]:
@@ -640,9 +640,10 @@ class AINB:
     def EntryStringEntry(self):
         entry = {}
         entry["Node Index"] = self.stream.read_u32()
-        main_state = self.string_pool.read_string(self.stream.read_u32())
-        state = self.string_pool.read_string(self.stream.read_u32())
-        entry[main_state] = state
+        action_slot = self.string_pool.read_string(self.stream.read_u32())
+        action = self.string_pool.read_string(self.stream.read_u32())
+        entry["Action Slot"] = action_slot
+        entry["Action"] = action
         return entry
     
     def Node(self):
@@ -655,7 +656,7 @@ class AINB:
         if flags:
             entry["Flags"] = []
             if flags & 0b1:
-                entry["Flags"].append("Is Precondition Node")
+                entry["Flags"].append("Is Query")
             if flags & 0b10:
                 entry["Flags"].append("Is Module")
             if flags & 0b100:
@@ -666,38 +667,38 @@ class AINB:
             entry["Name Hash"] = hex(self.stream.read_u32()) # not present in v404
         self.stream.read_u32()
         entry["Parameters Offset"] = self.stream.read_u32()
-        entry["EXB Function Count"] = self.stream.read_u16()
-        entry["EXB Input/Output Size"] = self.stream.read_u16()
-        del entry["EXB Function Count"], entry["EXB Input/Output Size"]
+        entry["Expression Count"] = self.stream.read_u16()
+        entry["Expression Input/Output Size"] = self.stream.read_u16()
+        del entry["Expression Count"], entry["Expression Input/Output Size"]
         entry["Multi-Param Count"] = self.stream.read_u16() # Unnecessary as node parameters will already be paired
         self.stream.read_u16()
         entry["Base Attachment Index"] = self.stream.read_u32()
-        entry["Base Precondition Node"] = self.stream.read_u16()
-        entry["Precondition Count"] = self.stream.read_u16()
+        entry["Base Query"] = self.stream.read_u16()
+        entry["Query Count"] = self.stream.read_u16()
         self.stream.read_u32()
         entry["GUID"] = self.GUID()
-        if entry["Precondition Count"] > 0:
-            entry["Precondition Nodes"] = []
-            for i in range(entry["Precondition Count"]):
-                entry["Precondition Nodes"].append(self.precondition_nodes[entry["Base Precondition Node"] + i])
-        del entry["Base Precondition Node"]
+        if entry["Query Count"] > 0:
+            entry["Queries"] = []
+            for i in range(entry["Query Count"]):
+                entry["Queries"].append(self.precondition_nodes[entry["Base Query"] + i])
+        del entry["Base Query"]
         # This is all to get the function count and I know it could be way more efficient but it's late and I can't think
         if entry["Attachment Count"] > 0:
             entry["Attachments"] = []
             for i in range(entry["Attachment Count"]):
                 entry["Attachments"].append(self.attachment_parameters[self.attachment_array[entry["Base Attachment Index"] + i]])
             for attachment in entry["Attachments"]:
-                if "Parameters" in attachment:
-                    for type in attachment["Parameters"]:
+                if "Properties" in attachment:
+                    for type in attachment["Properties"]:
                         for entry1 in type:
-                            if "Function" in entry1:
+                            if "Expression" in entry1:
                                 exb_count += 1
                             if "Sources" in entry1:
                                 for parameter in entry1["Sources"]:
-                                    if "Function" in parameter:
+                                    if "Expression" in parameter:
                                         exb_count += 1
         # We don't need these anymore actually
-        del entry["Attachment Count"], entry["Base Attachment Index"], entry["Multi-Param Count"], entry["Precondition Count"]
+        del entry["Attachment Count"], entry["Base Attachment Index"], entry["Multi-Param Count"], entry["Query Count"]
         if(self.version > 0x404):
             del entry["Name Hash"]
         jumpback = self.stream.tell()
@@ -712,16 +713,16 @@ class AINB:
             for j in range(count):
                 immediate_parameters[type_standard[i]].append(self.immediate_parameters[type_standard[i]][index + j])
                 # Unsure if these can even have EXB functions
-                if "Function" in self.immediate_parameters[type_standard[i]][index + j]:
+                if "Expression" in self.immediate_parameters[type_standard[i]][index + j]:
                     exb_count += 1
                 if "Sources" in self.immediate_parameters[type_standard[i]][index + j]:
                     for parameter in self.immediate_parameters[type_standard[i]][index + j]["Sources"]:
-                        if "Function" in parameter:
+                        if "Expression" in parameter:
                             exb_count += 1
             if not(immediate_parameters[type_standard[i]]):
                 del immediate_parameters[type_standard[i]]
         if immediate_parameters:
-            entry["Internal Parameters"] = immediate_parameters
+            entry["Properties"] = immediate_parameters
         input_parameters = {}
         output_parameters = {}
         for i in range(6):
@@ -730,11 +731,11 @@ class AINB:
             input_parameters[type_standard[i]] = []
             for j in range(count):
                 input_parameters[type_standard[i]].append(self.input_parameters[type_standard[i]][index + j])
-                if "Function" in self.input_parameters[type_standard[i]][index + j]:
+                if "Expression" in self.input_parameters[type_standard[i]][index + j]:
                     exb_count += 1
                 if "Sources" in self.input_parameters[type_standard[i]][index + j]:
                     for parameter in self.input_parameters[type_standard[i]][index + j]["Sources"]:
-                        if "Function" in parameter:
+                        if "Expression" in parameter:
                             exb_count += 1
             if not(input_parameters[type_standard[i]]):
                 del input_parameters[type_standard[i]]
@@ -746,9 +747,9 @@ class AINB:
             if not(output_parameters[type_standard[i]]):
                 del output_parameters[type_standard[i]]
         if input_parameters:
-            entry["Input Parameters"] = input_parameters
+            entry["Inputs"] = input_parameters
         if output_parameters:
-            entry["Output Parameters"] = output_parameters
+            entry["Outputs"] = output_parameters
         self.exb_instances += exb_count
         # Child Nodes
         counts = []
@@ -758,7 +759,7 @@ class AINB:
             indices.append(self.stream.read_u8())
         start = self.stream.tell()
         if sum(counts) != 0:
-            entry["Linked Nodes"] = {}
+            entry["Plugs"] = {}
             mapping = {0 : "Bool/Float Input Link and Output Link",
                        1 : None, # Unused in TotK
                        2 : "Standard Link",
@@ -767,7 +768,7 @@ class AINB:
                        5 : "Int Input Link",
                        6 : None, 7 : None, 8 : None, 9 : None} # Unused in TotK
             for i in range(10):
-                entry["Linked Nodes"][mapping[i]] = []
+                entry["Plugs"][mapping[i]] = []
                 self.stream.seek(start + indices[i] * 4)
                 offsets = []
                 for j in range(counts[i]):
@@ -777,17 +778,17 @@ class AINB:
                     info = {}
                     info["Node Index"] = self.stream.read_u32()
                     if i == 0:
-                        info["Link Name"] = self.string_pool.read_string(self.stream.read_u32())
+                        info["Plug Name"] = self.string_pool.read_string(self.stream.read_u32())
                     elif i in [2, 4, 5]:
                         ref = self.string_pool.read_string(self.stream.read_u32())
-                        info["Link Name"] = ref
+                        info["Plug Name"] = ref
                         if entry["Node Type"] in ["Element_S32Selector", "Element_F32Selector", "Element_StringSelector", "Element_RandomSelector"]:
                             is_end = bool(offsets.index(offset) == len(offsets) - 1) and i == 2
                             if entry["Node Type"] == "Element_S32Selector":
                                 index = self.stream.read_s16()
                                 flag = self.stream.read_u16() >> 15 # Is valid index
                                 if flag:
-                                    entry["Local Blackboard Index"] = index
+                                    entry["Blackboard Index"] = index
                                 if is_end:
                                     info["Condition"] = "Default"
                                 else:
@@ -796,7 +797,7 @@ class AINB:
                                 index = self.stream.read_u16()
                                 flag = self.stream.read_u16() >> 15 # Is valid index
                                 if flag:
-                                    entry["Local Blackboard Index"] = index
+                                    entry["Blackboard Index"] = index
                                 if not(is_end):
                                     info["Condition Min"] = self.stream.read_f32()
                                     self.stream.read_u32()
@@ -807,22 +808,22 @@ class AINB:
                                 index = self.stream.read_u16()
                                 flag = self.stream.read_u16() >> 15 # Is valid index
                                 if flag:
-                                    entry["Local Blackboard Index"] = index
+                                    entry["Blackboard Index"] = index
                                 if is_end:
                                     info[self.string_pool.read_string(self.stream.read_u32())] = "Default"
                                 else:
                                     info["Condition"] = self.string_pool.read_string(self.stream.read_u32())
                             elif entry["Node Type"] == "Element_RandomSelector":
-                                info["Probability"] = self.stream.read_f32()
+                                info["Weight"] = self.stream.read_f32()
                         elif entry["Name"] in ["SelectorBSABrainVerbUpdater", "SelectorBSAFormChangeUpdater"]: # hmm
                             info["Unknown 1"] = self.stream.read_u32()
                             info["Unknown 2"] = self.stream.read_u32()
                     if i == 3:
                         update_index = self.stream.read_u32()
                         info["Update Info"] = self.resident_update_array[update_index]
-                    entry["Linked Nodes"][mapping[i]].append(info)
-                if not(entry["Linked Nodes"][mapping[i]]):
-                    del entry["Linked Nodes"][mapping[i]]
+                    entry["Plugs"][mapping[i]].append(info)
+                if not(entry["Plugs"][mapping[i]]):
+                    del entry["Plugs"][mapping[i]]
         self.stream.seek(jumpback)
         return entry
     
@@ -852,7 +853,7 @@ class AINB:
         buffer.write(u32(buffer._string_refs[self.filename]))
         buffer.write(u32(len(self.commands)))
         buffer.write(u32(len(self.nodes)))
-        buffer.write(u32(len([precon for precon in [node for node in self.nodes if "Flags" in node] if "Is Precondition Node" in precon["Flags"]])))
+        buffer.write(u32(len([precon for precon in [node for node in self.nodes if "Flags" in node] if "Is Query" in precon["Flags"]])))
         buffer.write(u32(0)) # Skip for now
         buffer.write(u32(len([node for node in self.nodes if "Output" in node["Node Type"]])))
         nodeSize = 60 if self.version > 0x404 else 56
@@ -915,14 +916,14 @@ class AINB:
                     for attachment in node["Attachments"]:
                         attach_exb_count = 0
                         attach_exb_size = 0
-                        if "Parameters" in attachment:
-                            for type in attachment["Parameters"]:
-                                for entry in attachment["Parameters"][type]:
-                                    if "Function" in entry:
+                        if "Properties" in attachment:
+                            for type in attachment["Properties"]:
+                                for entry in attachment["Properties"][type]:
+                                    if "Expression" in entry:
                                         exb_count += 1
                                         attach_exb_count += 1
                                         size = 0
-                                        for instruction in entry["Function"]["Instructions"]:
+                                        for instruction in entry["Expression"]["Instructions"]:
                                             if "Data Type" in instruction:
                                                 if instruction["Data Type"] == "vec3f":
                                                     type_size = 12
@@ -940,7 +941,7 @@ class AINB:
                                             exb_count += 1
                                             attach_exb_count += 1
                                             size = 0
-                                            for instruction in parameter["Function"]["Instructions"]:
+                                            for instruction in parameter["Expression"]["Instructions"]:
                                                 if "Data Type" in instruction:
                                                     if instruction["Data Type"] == "vec3f":
                                                         type_size = 12
@@ -967,13 +968,13 @@ class AINB:
                     attach_counts[node["Node Index"]] = len(node["Attachments"])
                 else:
                     attach_counts[node["Node Index"]] = 0
-                if "Internal Parameters" in node:
-                    for type in node["Internal Parameters"]:
-                        for entry in node["Internal Parameters"][type]:
-                            if "Function" in entry:
+                if "Properties" in node:
+                    for type in node["Properties"]:
+                        for entry in node["Properties"][type]:
+                            if "Expression" in entry:
                                 exb_count += 1
                                 size = 0
-                                for instruction in entry["Function"]["Instructions"]:
+                                for instruction in entry["Expression"]["Instructions"]:
                                     if "Data Type" in instruction:
                                         if instruction["Data Type"] == "vec3f":
                                             type_size = 12
@@ -988,10 +989,10 @@ class AINB:
                             if "Sources" in entry:
                                 for parameter in entry["Sources"]:
                                     multis.append(parameter)
-                                    if "Function" in parameter:
+                                    if "Expression" in parameter:
                                         exb_count += 1
                                         size = 0
-                                        for instruction in parameter["Function"]["Instructions"]:
+                                        for instruction in parameter["Expression"]["Instructions"]:
                                             if "Data Type" in instruction:
                                                 if instruction["Data Type"] == "vec3f":
                                                     type_size = 12
@@ -1007,13 +1008,13 @@ class AINB:
                                     multi_counts[node["Node Index"]] += len(entry["Sources"])
                                 else:
                                     multi_counts[node["Node Index"]] = len(entry["Sources"])
-                if "Input Parameters" in node:
-                    for type in node["Input Parameters"]:
-                        for entry in node["Input Parameters"][type]:
-                            if "Function" in entry:
+                if "Inputs" in node:
+                    for type in node["Inputs"]:
+                        for entry in node["Inputs"][type]:
+                            if "Expression" in entry:
                                 exb_count += 1
                                 size = 0
-                                for instruction in entry["Function"]["Instructions"]:
+                                for instruction in entry["Expression"]["Instructions"]:
                                     if "Data Type" in instruction:
                                         if instruction["Data Type"] == "vec3f":
                                             type_size = 12
@@ -1028,10 +1029,10 @@ class AINB:
                             if "Sources" in entry:
                                 for parameter in entry["Sources"]:
                                     multis.append(parameter)
-                                    if "Function" in parameter:
+                                    if "Expression" in parameter:
                                         exb_count += 1
                                         size = 0
-                                        for instruction in parameter["Function"]["Instructions"]:
+                                        for instruction in parameter["Expression"]["Instructions"]:
                                             if "Data Type" in instruction:
                                                 if instruction["Data Type"] == "vec3f":
                                                     type_size = 12
@@ -1049,17 +1050,17 @@ class AINB:
                                     multi_counts[node["Node Index"]] = len(entry["Sources"])
                 if node["Node Index"] not in multi_counts:
                     multi_counts[node["Node Index"]] = 0
-                if "Precondition Nodes" in node:
+                if "Queries" in node:
                     base_precons.append(base_precon)
-                    for i in range(len(node["Precondition Nodes"])):
-                        precondition_nodes.update({base_precon + i : node["Precondition Nodes"][i]})
-                    base_precon += len(node["Precondition Nodes"])
-                    precon_counts[node["Node Index"]] = len(node["Precondition Nodes"])
+                    for i in range(len(node["Queries"])):
+                        precondition_nodes.update({base_precon + i : node["Queries"][i]})
+                    base_precon += len(node["Queries"])
+                    precon_counts[node["Node Index"]] = len(node["Queries"])
                 else:
                     base_precons.append(0)
                     precon_counts[node["Node Index"]] = 0
-                if "Entry String" in node:
-                    entry_strings.append((node["Node Index"], node["Entry String"]))
+                if "XLink Actions" in node:
+                    entry_strings.append((node["Node Index"], node["XLink Actions"]))
                 exb_info.append((exb_count, exb_size))
         buffer.skip(len(self.nodes) * nodeSize)
 
@@ -1140,13 +1141,13 @@ class AINB:
         if self.nodes:
             for node in self.nodes:
                 bodies.append(buffer.tell())
-                if "Internal Parameters" in node:
+                if "Properties" in node:
                     for type in type_standard:
-                        if type in node["Internal Parameters"]:
-                            for entry in node["Internal Parameters"][type]:
+                        if type in node["Properties"]:
+                            for entry in node["Properties"][type]:
                                 immediate_parameters[type].append(entry)
-                            buffer.write(u32(len(immediate_parameters[type]) - len(node["Internal Parameters"][type])))
-                            buffer.write(u32(len(node["Internal Parameters"][type])))
+                            buffer.write(u32(len(immediate_parameters[type]) - len(node["Properties"][type])))
+                            buffer.write(u32(len(node["Properties"][type])))
                             immediate_current[type] = len(immediate_parameters[type])
                         else:
                             buffer.write(u32(immediate_current[type]))
@@ -1156,12 +1157,12 @@ class AINB:
                         buffer.write(u32(immediate_current[type]))
                         buffer.write(u32(0))
                 for type in type_standard:
-                    if "Input Parameters" in node:
-                        if type in node["Input Parameters"]:
-                            for entry in node["Input Parameters"][type]:
+                    if "Inputs" in node:
+                        if type in node["Inputs"]:
+                            for entry in node["Inputs"][type]:
                                 input_parameters[type].append(entry)
-                            buffer.write(u32(len(input_parameters[type]) - len(node["Input Parameters"][type])))
-                            buffer.write(u32(len(node["Input Parameters"][type])))
+                            buffer.write(u32(len(input_parameters[type]) - len(node["Inputs"][type])))
+                            buffer.write(u32(len(node["Inputs"][type])))
                             input_current[type] = len(input_parameters[type])
                         else:
                             buffer.write(u32(input_current[type]))
@@ -1169,12 +1170,12 @@ class AINB:
                     else:
                         buffer.write(u32(input_current[type]))
                         buffer.write(u32(0))
-                    if "Output Parameters" in node:
-                        if type in node["Output Parameters"]:
-                            for entry in node["Output Parameters"][type]:
+                    if "Outputs" in node:
+                        if type in node["Outputs"]:
+                            for entry in node["Outputs"][type]:
                                 output_parameters[type].append(entry)
-                            buffer.write(u32(len(output_parameters[type]) - len(node["Output Parameters"][type])))
-                            buffer.write(u32(len(node["Output Parameters"][type])))
+                            buffer.write(u32(len(output_parameters[type]) - len(node["Outputs"][type])))
+                            buffer.write(u32(len(node["Outputs"][type])))
                             output_current[type] = len(output_parameters[type])
                         else:
                             buffer.write(u32(output_current[type]))
@@ -1182,24 +1183,24 @@ class AINB:
                     else:
                         buffer.write(u32(output_current[type]))
                         buffer.write(u32(0))
-                if "Linked Nodes" in node:
+                if "Plugs" in node:
                     total = 0
                     for connection in ["Bool/Float Input Link and Output Link", 2, "Standard Link",
                                             "Resident Update Link", "String Input Link", "Int Input Link",
                                             7, 8, 9, 10]:
-                        if connection in node["Linked Nodes"]:
-                            buffer.write(u8(len(node["Linked Nodes"][connection])))
+                        if connection in node["Plugs"]:
+                            buffer.write(u8(len(node["Plugs"][connection])))
                             buffer.write(u8(total))
-                            total += len(node["Linked Nodes"][connection])
+                            total += len(node["Plugs"][connection])
                         else:
                             buffer.write(u8(0))
                             buffer.write(u8(total))
                     start = buffer.tell()
                     current = start + total * 4
                     i = 0
-                    for connection in node["Linked Nodes"]:
+                    for connection in node["Plugs"]:
                         if connection == "Resident Update Link":
-                            for entry in node["Linked Nodes"][connection]:
+                            for entry in node["Plugs"][connection]:
                                 buffer.write(u32(current))
                                 pos = buffer.tell()
                                 buffer.seek(current)
@@ -1214,27 +1215,27 @@ class AINB:
                                 i += 1
                                 buffer.seek(pos)
                         elif connection == "Bool/Float Input Link and Output Link":
-                            for entry in node["Linked Nodes"][connection]:
+                            for entry in node["Plugs"][connection]:
                                 buffer.write(u32(current))
                                 pos = buffer.tell()
                                 buffer.seek(current)
                                 buffer.write(u32(entry["Node Index"]))
-                                buffer.add_string(entry["Link Name"])
-                                buffer.write(u32(buffer._string_refs[entry["Link Name"]]))
+                                buffer.add_string(entry["Plug Name"])
+                                buffer.write(u32(buffer._string_refs[entry["Plug Name"]]))
                                 buffer.seek(pos)
                                 is_input = False
                                 if "Selector" in node["Node Type"] or node["Node Type"] == "Element_Expression":
-                                    if "Input Parameters" in node:
-                                        for type in node["Input Parameters"]:
-                                            for parameter in node["Input Parameters"][type]:
+                                    if "Inputs" in node:
+                                        for type in node["Inputs"]:
+                                            for parameter in node["Inputs"][type]:
                                                 if entry["Node Index"] == parameter["Node Index"]:
                                                     is_input = True
                                 if is_input:
                                     current += 16
-                                elif node["Node Type"] == "Element_Expression" and "Output Parameters" in node:
-                                    if "vec3f" in node["Output Parameters"]:
-                                        for parameter in node["Output Parameters"]["vec3f"]:
-                                            if entry["Link Name"] == parameter["Name"]:
+                                elif node["Node Type"] == "Element_Expression" and "Outputs" in node:
+                                    if "vec3f" in node["Outputs"]:
+                                        for parameter in node["Outputs"]["vec3f"]:
+                                            if entry["Plug Name"] == parameter["Name"]:
                                                 current += 24
                                 else:
                                     current += 8
@@ -1244,13 +1245,13 @@ class AINB:
                                     replacements.append((1, node["Node Index"], i, entry["Replacement Node Index"]))
                                 i += 1
                         else:
-                            for entry in node["Linked Nodes"][connection]:
+                            for entry in node["Plugs"][connection]:
                                 buffer.write(u32(current))
                                 pos = buffer.tell()
                                 buffer.seek(current)
                                 buffer.write(u32(entry["Node Index"]))
-                                buffer.add_string(entry["Link Name"])
-                                buffer.write(u32(buffer._string_refs[entry["Link Name"]]))
+                                buffer.add_string(entry["Plug Name"])
+                                buffer.write(u32(buffer._string_refs[entry["Plug Name"]]))
                                 if node["Node Type"] == "Element_F32Selector":
                                     if "Input" in entry:
                                         buffer.write(u32(self.global_params["float"].index(entry["Input"]) | (1 << 31)))
@@ -1277,8 +1278,8 @@ class AINB:
                                             buffer.write(u32(self.global_params["float"].index(entry["Input"]) | (1 << 31)))
                                     else:
                                         buffer.write(u32(0))
-                                    if "Probability" in entry:
-                                        buffer.write(f32(entry["Probability"]))
+                                    if "Weight" in entry:
+                                        buffer.write(f32(entry["Weight"]))
                                     elif "Condition" in entry:
                                         if entry["Condition"] != "Default":
                                             if node["Node Type"] == "Element_S32Selector":
@@ -1321,7 +1322,7 @@ class AINB:
                 buffer.write(u16(attach_counts[node["Node Index"]]))
                 flags = 0
                 if "Flags" in node:
-                    if "Is Precondition Node" in node["Flags"]:
+                    if "Is Query" in node["Flags"]:
                         flags = flags | 1
                     if "Is Module" in node["Flags"]:
                         flags = flags | 2
@@ -1374,12 +1375,12 @@ class AINB:
                 else:
                     buffer.write(u32(0))
                 for type in type_standard:
-                    if "Parameters" in attachment:
-                        if type in attachment["Parameters"]:
-                            for entry in attachment["Parameters"][type]:
+                    if "Properties" in attachment:
+                        if type in attachment["Properties"]:
+                            for entry in attachment["Properties"][type]:
                                 immediate_parameters[type].append(entry)
-                            buffer.write(u32(len(immediate_parameters[type]) - len(attachment["Parameters"][type])))
-                            buffer.write(u32(len(attachment["Parameters"][type])))
+                            buffer.write(u32(len(immediate_parameters[type]) - len(attachment["Properties"][type])))
+                            buffer.write(u32(len(attachment["Properties"][type])))
                             immediate_current[type] = len(immediate_parameters[type])
                         else:
                             buffer.write(u32(immediate_current[type]))
@@ -1407,14 +1408,14 @@ class AINB:
                     buffer.add_string(entry["Name"])
                     buffer.write(u32(buffer._string_refs[entry["Name"]]))
                     flags = 0x0
-                    if type == "userdefined":
+                    if type == "pointer":
                         buffer.add_string(entry["Class"])
                         buffer.write(u32(buffer._string_refs[entry["Class"]]))
-                    if "Local Blackboard Index" in entry:
-                        buffer.write(u16(entry["Local Blackboard Index"]))
+                    if "Blackboard Index" in entry:
+                        buffer.write(u16(entry["Blackboard Index"]))
                         flags += 0x8000
-                    elif "EXB Index" in entry:
-                        buffer.write(u16(entry["EXB Index"]))
+                    elif "Expression Index" in entry:
+                        buffer.write(u16(entry["Expression Index"]))
                         flags += 0xc200
                     else:
                         buffer.write(u16(0))
@@ -1447,12 +1448,12 @@ class AINB:
                 buffer.write(u32(current))
                 if type == "vec3f":
                     current += len(input_parameters[type] * 24)
-                elif type == "userdefined":
+                elif type == "pointer":
                     current += len(input_parameters[type] * 20)
                 else:
                     current += len(input_parameters[type] * 16)
                 buffer.write(u32(current))
-                if type != "userdefined":
+                if type != "pointer":
                     current += len(output_parameters[type] * 4)
                 else:
                     current += len(output_parameters[type] * 8)
@@ -1461,19 +1462,19 @@ class AINB:
                     buffer.add_string(entry["Name"])
                     buffer.write(u32(buffer._string_refs[entry["Name"]]))
                     flags = 0x0
-                    if type == "userdefined":
+                    if type == "pointer":
                         buffer.add_string(entry["Class"])
                         buffer.write(u32(buffer._string_refs[entry["Class"]]))
                     if "Sources" not in entry:
                         buffer.write(s16(entry["Node Index"]))
                     else:
                         buffer.write(s16(-100 - [x for x in range(len(multis) - len(entry["Sources"]) + 1) if multis[x:x+len(entry["Sources"])] == entry["Sources"]][0]))
-                    buffer.write(s16(entry["Parameter Index"]))
-                    if "Local Blackboard Index" in entry:
-                        buffer.write(u16(entry["Local Blackboard Index"]))
+                    buffer.write(s16(entry["Output Index"]))
+                    if "Blackboard Index" in entry:
+                        buffer.write(u16(entry["Blackboard Index"]))
                         flags += 0x8000
-                    elif "EXB Index" in entry:
-                        buffer.write(u16(entry["EXB Index"]))
+                    elif "Expression Index" in entry:
+                        buffer.write(u16(entry["Expression Index"]))
                         flags += 0xc200
                     else:
                         buffer.write(u16(0))
@@ -1496,7 +1497,7 @@ class AINB:
                     elif type == "vec3f":
                         for value in entry["Value"]:
                             buffer.write(f32(value))
-                    elif type == "userdefined":
+                    elif type == "pointer":
                         buffer.write(u32(entry["Value"]))
                 for entry in output_parameters[type]:
                     buffer.add_string(entry["Name"])
@@ -1505,7 +1506,7 @@ class AINB:
                         buffer.write(u32(offset | (1 << 31)))
                     else:
                         buffer.write(u32(offset))
-                    if type == "userdefined":
+                    if type == "pointer":
                         buffer.add_string(entry["Class"])
                         buffer.write(u32(buffer._string_refs[entry["Class"]]))
         else:
@@ -1515,13 +1516,13 @@ class AINB:
         if multis:
             for entry in multis:
                 buffer.write(s16(entry["Node Index"]))
-                buffer.write(s16(entry["Parameter Index"]))
+                buffer.write(s16(entry["Output Index"]))
                 flags = 0x0
-                if "Local Blackboard Index" in entry:
-                    buffer.write(u16(entry["Local Blackboard Index"]))
+                if "Blackboard Index" in entry:
+                    buffer.write(u16(entry["Blackboard Index"]))
                     flags += 0x8000
-                elif "EXB Index" in entry:
-                    buffer.write(u16(entry["EXB Index"]))
+                elif "Expression Index" in entry:
+                    buffer.write(u16(entry["Expression Index"]))
                     flags += 0xc200
                 else:
                     buffer.write(u16(0))
@@ -1546,7 +1547,7 @@ class AINB:
                 flags = 0
                 if "Is Valid Update" in resident["Flags"]:
                     flags = flags | 1
-                if "Update Post Current Command Calc" in resident["Flags"]:
+                if "Update Post Calc" in resident["Flags"]:
                     flags = flags | (1 << 31)
                 buffer.write(u32(flags))
                 if "String" in resident:
@@ -1575,10 +1576,10 @@ class AINB:
         if entry_strings:
             for entry in entry_strings:
                 buffer.write(u32(entry[0]))
-                buffer.add_string("メインステート")
-                buffer.write(u32(buffer._string_refs["メインステート"]))
-                buffer.add_string(entry[1]["メインステート"])
-                buffer.write(u32(buffer._string_refs[entry[1]["メインステート"]]))
+                buffer.add_string(entry[1]["Action Slot"])
+                buffer.write(u32(buffer._string_refs[entry[1]["Action Slot"]]))
+                buffer.add_string(entry[1]["Action"])
+                buffer.write(u32(buffer._string_refs[entry[1]["Action"]]))
         hash_start = buffer.tell()
         for hash in self.file_hashes:
             buffer.write(u32(int(self.file_hashes[hash][2:], 16)))

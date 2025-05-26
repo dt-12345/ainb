@@ -131,8 +131,10 @@ class EXB:
 
     def Info(self):
         info = {}
-        info["Base Index Pre-Command Entry"] = self.stream.read_s32()
-        info["Pre-Entry Static Memory Usage"] = self.stream.read_u32()
+        # I am going to be lazy and not parse the setup commands since totk never uses them
+        # barely anyone even knows they exist anyways
+        info["Setup Instruction Base Index"] = self.stream.read_s32()
+        info["Setup Instruction Count"] = self.stream.read_u32()
         info["Instruction Base Index"] = self.stream.read_u32()
         info["Instruction Count"] = self.stream.read_u32()
         info["Static Memory Size"] = self.stream.read_u32()
@@ -197,8 +199,8 @@ class EXB:
         max_32 = 0
         max_64 = 0
         for command in exb.commands:
-            buffer.write(s32(command["Base Index Pre-Command Entry"]))
-            buffer.write(u32(command["Pre-Entry Static Memory Usage"]))
+            buffer.write(s32(command["Setup Instruction Base Index"]))
+            buffer.write(u32(command["Setup Instruction Count"]))
             buffer.write(u32(instruction_index))
             buffer.write(u32(len(command["Instructions"])))
             instruction_index += len(command["Instructions"])
