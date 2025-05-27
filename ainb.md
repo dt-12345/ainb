@@ -82,7 +82,7 @@ These nodes are selectors which conditionally select a child node based upon an 
 
 #### Element_Sequential
 
-This node runs all connected child nodes sequentially. The next child node is only run when the previous one has finished (i.e. it has either a `Success` or `Failure` result) - because of this, be wary of using `Element_Sequential` with certain nodes (such as some `Execute` nodes) which may not terminate until the command itself is terminated. This node has a hard limit of 100 total child nodes.
+This node runs all connected child nodes sequentially. The next child node is only run when the previous one has finished (i.e. it has either a `Success` or `Failure` result) - because of this, be wary of using `Element_Sequential` with certain nodes (such as some `Execute` nodes) which may not terminate until the command itself is terminated.
 
 #### Element_Simultaneous
 
