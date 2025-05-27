@@ -109,19 +109,22 @@ class EXB:
                 self.instructions.append(self.ReadInstruction())
             
             # Match instructions to commands
-            instruction_index = 0
             for command in self.commands:
-                command["Instructions"] = []
+                if (command["Setup Instruction Base Index"]) != -1:
+                    command["Setup Expression"] = []
+                    for i in range(command["Setup Instruction Count"]):
+                        command["Setup Expression"].append(self.instructions[command["Setup Instruction Base Index"] + i])
+                command["Main Expression"] = []
                 for i in range(command["Instruction Count"]):
-                    command["Instructions"].append(self.instructions[instruction_index + i])
-                instruction_index += len(command["Instructions"])
-                del command["Instruction Count"] # Remove unnecessary fields from JSON
+                    command["Main Expression"].append(self.instructions[command["Instruction Base Index"] + i])
+                del command["Instruction Count"], command["Instruction Base Index"], \
+                    command["Setup Instruction Count"], command["Setup Instruction Base Index"] # Remove unnecessary fields from JSON
         else:
             self.commands = list(dict(sorted(functions.items())).values())
             self.instructions = []
             for entry in self.commands:
                 for key in entry:
-                    if key == "Instructions":
+                    if key == "Main Expression":
                         for instruction in entry[key]:
                             self.instructions.append(instruction)
 
@@ -131,8 +134,6 @@ class EXB:
 
     def Info(self):
         info = {}
-        # I am going to be lazy and not parse the setup commands since totk never uses them
-        # barely anyone even knows they exist anyways
         info["Setup Instruction Base Index"] = self.stream.read_s32()
         info["Setup Instruction Count"] = self.stream.read_u32()
         info["Instruction Base Index"] = self.stream.read_u32()
@@ -143,7 +144,7 @@ class EXB:
         info["Output Data Type"] = Type(self.stream.read_u16()).name
         info["Input Data Type"] = Type(self.stream.read_u16()).name
         # We don't need to store these fields
-        del info["Instruction Base Index"], info["32-bit Scratch Memory Size"], info["64-bit Scratch Memory Size"], info["Static Memory Size"]
+        del info["32-bit Scratch Memory Size"], info["64-bit Scratch Memory Size"], info["Static Memory Size"]
         return info
     
     def ReadInstruction(self):
@@ -199,13 +200,18 @@ class EXB:
         max_32 = 0
         max_64 = 0
         for command in exb.commands:
-            buffer.write(s32(command["Setup Instruction Base Index"]))
-            buffer.write(u32(command["Setup Instruction Count"]))
+            if "Setup Expression" in command:
+                buffer.write(u32(instruction_index))
+                buffer.write(u32(len(command["Setup Expression"])))
+                instruction_index += len(command["Setup Expression"])
+            else:
+                buffer.write(s32(-1))
+                buffer.write(u32(0))
             buffer.write(u32(instruction_index))
-            buffer.write(u32(len(command["Instructions"])))
-            instruction_index += len(command["Instructions"])
+            buffer.write(u32(len(command["Main Expression"])))
+            instruction_index += len(command["Main Expression"])
             static_size = 0
-            for instruction in command["Instructions"]:
+            for instruction in command["Main Expression"]:
                 if "LHS Source" in instruction or "RHS Source" in instruction:
                     if instruction["Data Type"] == "vec3f":
                         size = 12
@@ -224,7 +230,7 @@ class EXB:
             max_static = max(max_static, static_size)
             buffer.write(u32(static_size))
             scratch32_size = 0
-            for instruction in command["Instructions"]:
+            for instruction in command["Main Expression"]:
                 if "LHS Source" in instruction or "RHS Source" in instruction:
                     if instruction["Data Type"] == "vec3f":
                         size = 12
@@ -237,7 +243,7 @@ class EXB:
             max_32 = max(max_32, scratch32_size)
             buffer.write(u16(scratch32_size))
             scratch64_size = 0
-            for instruction in command["Instructions"]:
+            for instruction in command["Main Expression"]:
                 if "LHS Source" in instruction or "RHS Source" in instruction:
                     if instruction["Data Type"] == "vec3f":
                         size = 12

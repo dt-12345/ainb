@@ -39,9 +39,9 @@ class Node_Type(Enum):
     Element_SplitTiming            = 500
 
 # User-Defined stores pointers to the corresponding structure/class
-type_standard = ["int", "bool", "float", "string", "vec3f", "pointer"] # Data type order
+type_standard = ["s32", "bool", "f32", "string", "vec3f", "pointer"] # Data type order
 
-type_global = ["string", "int", "float", "bool", "vec3f", "pointer"] # Data type order (global parameters)
+type_global = ["string", "s32", "f32", "bool", "vec3f", "pointer"] # Data type order (global parameters)
 
 file_category = {"AI" : 0, "Logic" : 1, "Sequence" : 2}
 
@@ -426,11 +426,11 @@ class AINB:
         return entry
     
     def GlobalValue(self, type):
-        if type == "int":
+        if type == "s32":
             value = self.stream.read_u32()
         if type == "bool":
             value = bool(self.stream.read_u32())
-        if type == "float":
+        if type == "f32":
             value = self.stream.read_f32()
         if type == "string":
             value = self.string_pool.read_string(self.stream.read_u32())
@@ -506,9 +506,9 @@ class AINB:
         # User-Defined types don't have values stored
         if type == "string":
             entry["Value"] = self.string_pool.read_string(self.stream.read_u32())
-        if type == "int":
+        if type == "s32":
             entry["Value"] = self.stream.read_s32()
-        if type == "float":
+        if type == "f32":
             entry["Value"] = self.stream.read_f32()
         if type == "bool":
             entry["Value"] = bool(self.stream.read_u32())
@@ -580,9 +580,9 @@ class AINB:
                 del entry["Flags"]
         if type == "string":
             entry["Value"] = self.string_pool.read_string(self.stream.read_u32())
-        if type == "int":
+        if type == "s32":
             entry["Value"] = self.stream.read_s32()
-        if type == "float":
+        if type == "f32":
             entry["Value"] = self.stream.read_f32()
         if type == "bool":
             entry["Value"] = bool(self.stream.read_u32())
@@ -923,7 +923,7 @@ class AINB:
                                         exb_count += 1
                                         attach_exb_count += 1
                                         size = 0
-                                        for instruction in entry["Expression"]["Instructions"]:
+                                        for instruction in entry["Expression"]["Main Expression"]:
                                             if "Data Type" in instruction:
                                                 if instruction["Data Type"] == "vec3f":
                                                     type_size = 12
@@ -941,7 +941,7 @@ class AINB:
                                             exb_count += 1
                                             attach_exb_count += 1
                                             size = 0
-                                            for instruction in parameter["Expression"]["Instructions"]:
+                                            for instruction in parameter["Expression"]["Main Expression"]:
                                                 if "Data Type" in instruction:
                                                     if instruction["Data Type"] == "vec3f":
                                                         type_size = 12
@@ -974,7 +974,7 @@ class AINB:
                             if "Expression" in entry:
                                 exb_count += 1
                                 size = 0
-                                for instruction in entry["Expression"]["Instructions"]:
+                                for instruction in entry["Expression"]["Main Expression"]:
                                     if "Data Type" in instruction:
                                         if instruction["Data Type"] == "vec3f":
                                             type_size = 12
@@ -992,7 +992,7 @@ class AINB:
                                     if "Expression" in parameter:
                                         exb_count += 1
                                         size = 0
-                                        for instruction in parameter["Expression"]["Instructions"]:
+                                        for instruction in parameter["Expression"]["Main Expression"]:
                                             if "Data Type" in instruction:
                                                 if instruction["Data Type"] == "vec3f":
                                                     type_size = 12
@@ -1014,7 +1014,7 @@ class AINB:
                             if "Expression" in entry:
                                 exb_count += 1
                                 size = 0
-                                for instruction in entry["Expression"]["Instructions"]:
+                                for instruction in entry["Expression"]["Main Expression"]:
                                     if "Data Type" in instruction:
                                         if instruction["Data Type"] == "vec3f":
                                             type_size = 12
@@ -1032,7 +1032,7 @@ class AINB:
                                     if "Expression" in parameter:
                                         exb_count += 1
                                         size = 0
-                                        for instruction in parameter["Expression"]["Instructions"]:
+                                        for instruction in parameter["Expression"]["Main Expression"]:
                                             if "Data Type" in instruction:
                                                 if instruction["Data Type"] == "vec3f":
                                                     type_size = 12
@@ -1104,10 +1104,10 @@ class AINB:
             size = 0
             for type in self.global_params:
                 for entry in self.global_params[type]:
-                    if type == "int":
+                    if type == "s32":
                         buffer.write(u32(entry["Default Value"]))
                         size += 4
-                    if type == "float":
+                    if type == "f32":
                         buffer.write(f32(entry["Default Value"]))
                         size += 4
                     if type == "bool":
@@ -1254,7 +1254,7 @@ class AINB:
                                 buffer.write(u32(buffer._string_refs[entry["Plug Name"]]))
                                 if node["Node Type"] == "Element_F32Selector":
                                     if "Input" in entry:
-                                        buffer.write(u32(self.global_params["float"].index(entry["Input"]) | (1 << 31)))
+                                        buffer.write(u32(self.global_params["f32"].index(entry["Input"]) | (1 << 31)))
                                     else:
                                         buffer.write(u32(0))
                                     if "その他" in entry:
@@ -1273,9 +1273,9 @@ class AINB:
                                         if node["Node Type"] == "Element_StringSelector":
                                             buffer.write(u32(self.global_params["string"].index(entry["Input"]) | (1 << 31)))
                                         elif node["Node Type"] == "Element_S32Selector":
-                                            buffer.write(u32(self.global_params["int"].index(entry["Input"]) | (1 << 31)))
+                                            buffer.write(u32(self.global_params["s32"].index(entry["Input"]) | (1 << 31)))
                                         elif node["Node Type"] == "Element_RandomSelector":
-                                            buffer.write(u32(self.global_params["float"].index(entry["Input"]) | (1 << 31)))
+                                            buffer.write(u32(self.global_params["f32"].index(entry["Input"]) | (1 << 31)))
                                     else:
                                         buffer.write(u32(0))
                                     if "Weight" in entry:
@@ -1426,11 +1426,11 @@ class AINB:
                             if flag == "Is Output":
                                 flags += 0x100
                     buffer.write(u16(flags))
-                    if type == "int":
+                    if type == "s32":
                         buffer.write(s32(entry["Value"]))
                     elif type == "bool":
                         buffer.write(u32(int(entry["Value"])))
-                    elif type == "float":
+                    elif type == "f32":
                         buffer.write(f32(entry["Value"]))
                     elif type == "string":
                         buffer.add_string(entry["Value"])
@@ -1485,11 +1485,11 @@ class AINB:
                             if flag == "Is Output":
                                 flags += 0x100
                     buffer.write(u16(flags))
-                    if type == "int":
+                    if type == "s32":
                         buffer.write(s32(entry["Value"]))
                     elif type == "bool":
                         buffer.write(u32(int(entry["Value"])))
-                    elif type == "float":
+                    elif type == "f32":
                         buffer.write(f32(entry["Value"]))
                     elif type == "string":
                         buffer.add_string(entry["Value"])
