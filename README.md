@@ -31,9 +31,9 @@ python graph.py graph <path_to_ainb> true # Creates recursive node graph of file
 
 ## File Format Overview
 
-AINB (**AI** **N**ode **B**inary) is a binary file format used by ModulePack[1] games for various AI and logic purposes. AINB files contain a set of interconnected nodes which are run and updated by the game that control different aspects of the game from enemy AI to conditional spawning. Individual files may also contain "embedded" AINB files that are called by certain nodes. This leads to a complex system of node connections which can be difficult to keep track of mentally.
+AINB (**AI** **N**ode **B**inary) is a binary file format used by ModuleSystem[1] games for various AI and logic purposes. AINB files contain a set of interconnected nodes which are run and updated by the game that control different aspects of the game from enemy AI to conditional spawning. Individual files may also contain "embedded" AINB files that are called by certain nodes. This leads to a complex system of node connections which can be difficult to keep track of mentally.
 
-[1]: ModulePack is the unofficial name for the game engine used in recent Nintendo EPD games such as *Nintendo Switch Sports*, *Splatoon 3*, *The Legend of Zelda: Tears of the Kingdom*, and *Super Mario Bros. Wonder*
+[1]: ModuleSystem is the unofficial name for the game engine used in recent Nintendo EPD games such as *Nintendo Switch Sports*, *Splatoon 3*, *The Legend of Zelda: Tears of the Kingdom*, and *Super Mario Bros. Wonder*
 
 ## Notes
 Reserialization is not byte-perfect and unused strings are removed, potentially leading to some string offsets being different from the original file - however, the game should still run without issue so editing the JSON/YAML then converting is OK
