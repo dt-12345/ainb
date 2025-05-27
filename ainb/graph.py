@@ -36,7 +36,7 @@ def graph(filepath, recurse=False, parent_id=None, dot=None, index=None):
     precondition_nodes = []
 
     for node in data["Nodes"]:
-        if "Flags" in node and "Is Precondition Node" in node["Flags"]:
+        if "Flags" in node and "Is Query" in node["Flags"]:
             precondition_nodes.append(node["Node Index"])
 
     id_list = {}
@@ -69,12 +69,12 @@ def graph(filepath, recurse=False, parent_id=None, dot=None, index=None):
                                 if extension == ".yaml":
                                     print("Unable to find " + data["Nodes"][node_index]["Name"])
                                 pass
-            if "Precondition Nodes" in data["Nodes"][node_index]:
-                for node in data["Nodes"][node_index]["Precondition Nodes"]:
-                    iter_node(precondition_nodes[node], id, "Precondition", already_seen, precon=True)
-            if "Input Parameters" in data["Nodes"][node_index]:
-                for type in data["Nodes"][node_index]["Input Parameters"]:
-                    for parameter in data["Nodes"][node_index]["Input Parameters"][type]:
+            if "Queries" in data["Nodes"][node_index]:
+                for node in data["Nodes"][node_index]["Queries"]:
+                    iter_node(precondition_nodes[node], id, "Query", already_seen, precon=True)
+            if "Inputs" in data["Nodes"][node_index]:
+                for type in data["Nodes"][node_index]["Inputs"]:
+                    for parameter in data["Nodes"][node_index]["Inputs"][type]:
                         if "Node Index" in parameter:
                             if parameter["Node Index"] >= 0:
                                 iter_node(parameter["Node Index"], id, parameter["Name"], already_seen, precon=True)
@@ -82,35 +82,35 @@ def graph(filepath, recurse=False, parent_id=None, dot=None, index=None):
                             for param in parameter["Sources"]:
                                 if param["Node Index"] >= 0:
                                     iter_node(param["Node Index"], id, parameter["Name"], already_seen, precon=True)
-            if "Linked Nodes" in data["Nodes"][node_index]:
-                if "Standard Link" in data["Nodes"][node_index]["Linked Nodes"]:
+            if "Plugs" in data["Nodes"][node_index]:
+                if "Standard Link" in data["Nodes"][node_index]["Plugs"]:
                     if data["Nodes"][node_index]["Node Type"] != "Element_Sequential":
-                        for node in data["Nodes"][node_index]["Linked Nodes"]["Standard Link"]:
+                        for node in data["Nodes"][node_index]["Plugs"]["Standard Link"]:
                             if "Condition" in node:
                                 iter_node(node["Node Index"], id, str(node["Condition"]), already_seen)
                             elif "その他" in node:
                                 iter_node(node["Node Index"], id, "Default", already_seen)
-                            elif "Probability" in node:
-                                iter_node(node["Node Index"], id, "Probability: " + str(node["Probability"]), already_seen)
+                            elif "Weight" in node:
+                                iter_node(node["Node Index"], id, "Probability: " + str(node["Weight"]), already_seen)
                             elif "Condition Min" in node:
                                 iter_node(node["Node Index"], id, "Min: " + str(node["Condition Min"]) + " | Max: " + str(node["Condition Max"]), already_seen)
                             else:
                                 iter_node(node["Node Index"], id, node["Link Name"], already_seen)
                     else:
                         ids = [id]
-                        for node in data["Nodes"][node_index]["Linked Nodes"]["Standard Link"]:
-                            ids.append(iter_node(node["Node Index"], ids[data["Nodes"][node_index]["Linked Nodes"]["Standard Link"].index(node)], None, already_seen))
-                if "Resident Update Link" in data["Nodes"][node_index]["Linked Nodes"]:
-                    for node in data["Nodes"][node_index]["Linked Nodes"]["Resident Update Link"]:
+                        for node in data["Nodes"][node_index]["Plugs"]["Standard Link"]:
+                            ids.append(iter_node(node["Node Index"], ids[data["Nodes"][node_index]["Plugs"]["Standard Link"].index(node)], None, already_seen))
+                if "Resident Update Link" in data["Nodes"][node_index]["Plugs"]:
+                    for node in data["Nodes"][node_index]["Plugs"]["Resident Update Link"]:
                         iter_node(node["Node Index"], id, "Resident Update", already_seen)
-                if "Bool/Float Input Link and Output Link" in data["Nodes"][node_index]["Linked Nodes"]:
-                    for node in data["Nodes"][node_index]["Linked Nodes"]["Bool/Float Input Link and Output Link"]:
+                if "Bool/Float Input Link and Output Link" in data["Nodes"][node_index]["Plugs"]:
+                    for node in data["Nodes"][node_index]["Plugs"]["Bool/Float Input Link and Output Link"]:
                         iter_node(node["Node Index"], id, node["Link Name"], already_seen, precon=True)
-                if "Int Input Link" in data["Nodes"][node_index]["Linked Nodes"]:
-                    for node in data["Nodes"][node_index]["Linked Nodes"]["Int Input Link"]:
+                if "Int Input Link" in data["Nodes"][node_index]["Plugs"]:
+                    for node in data["Nodes"][node_index]["Plugs"]["Int Input Link"]:
                         iter_node(node["Node Index"], id, node["Link Name"], already_seen, precon=True)
-                if "String Input Link" in data["Nodes"][node_index]["Linked Nodes"]:
-                    for node in data["Nodes"][node_index]["Linked Nodes"]["String Input Link"]:
+                if "String Input Link" in data["Nodes"][node_index]["Plugs"]:
+                    for node in data["Nodes"][node_index]["Plugs"]["String Input Link"]:
                         iter_node(node["Node Index"], id, node["Link Name"], already_seen, precon=True)
             return id
         elif node_index < len(data["Nodes"]):
