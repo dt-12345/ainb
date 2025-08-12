@@ -170,17 +170,28 @@ class EXB:
                     elif instruction["Data Type"] == "f32":
                         instruction[f"{i} Value"] = self.stream.read_f32()
                     elif instruction["Data Type"] == "vec3f":
-                        instruction[f"{i} Value"] = [self.stream.read_f32(), self.stream.read_f32(), self.stream.read_f32()]
+                        if i == "RHS" and instruction["Type"] in ["ScalarMultiplyVec3f", "ScalarDivideVec3f"]:
+                            instruction[f"{i} Value"] = self.stream.read_f32()
+                        else:
+                            instruction[f"{i} Value"] = [self.stream.read_f32(), self.stream.read_f32(), self.stream.read_f32()]
                     self.stream.seek(jumpback)
-                if instruction[f"{i} Source"] == "ParamTblStr":
+                elif instruction[f"{i} Source"] == "ParamTblStr":
                     jumpback = self.stream.tell()
                     self.stream.seek(self.parameter_region_offset + instruction[f"{i} Index/Value"])
                     instruction[f"{i} Value"] = self.string_pool.read_string()
                     self.stream.seek(jumpback)
-                if instruction[f"{i} Source"] == "Imm":
+                elif instruction[f"{i} Source"] == "Imm":
                     instruction[f"{i} Value"] = instruction[f"{i} Index/Value"]
-                if instruction[f"{i} Source"] == "ImmStr":
+                elif instruction[f"{i} Source"] == "ImmStr":
                     instruction[f"{i} Value"] = self.string_pool.read_string(instruction[f"{i} Index/Value"])
+                elif i == "RHS" and instruction[f"RHS Source"] in ["UserOut", "UserIn"]:
+                    if instruction["Data Type"] == "f32" and instruction["RHS Index/Value"] >> 0xf != 0:
+                        val = instruction["RHS Index/Value"]
+                        instruction["RHS Index/Value"] = val & 0xff
+                        component = (val & 0x7f00) >> 8
+                        if component not in [0, 4, 8]:
+                            raise ValueError(f"Invalid vec3f component: {component}")
+                        instruction["Sub Data Type"] = f"vec3f.{'x' if component == 0 else 'y' if component == 4 else 'z'}"
             return instruction
         else:
             instruction["Static Memory Index"] = self.stream.read_u16()
@@ -270,6 +281,15 @@ class EXB:
                     elif "Source" in key:
                         buffer.write(u8(Source[instruction[key]].value))
                     elif "Index/Value" in key:
+                        if "Sub Data Type" in instruction:
+                            if instruction["Sub Data Type"] == "vec3f.x":
+                                instruction["RHS Index/Value"] |= 0x8000
+                            elif instruction["Sub Data Type"] == "vec3f.y":
+                                instruction["RHS Index/Value"] |= 0x8400
+                            elif instruction["Sub Data Type"] == "vec3f.z":
+                                instruction["RHS Index/Value"] |= 0x8800
+                            else:
+                                raise ValueError("Unknown vec3f component!")
                         buffer.write(u16(instruction[key]))
                     elif key == "Static Memory Index":
                         buffer.write(u16(instruction[key]))
@@ -295,20 +315,14 @@ class EXB:
                         if type(instruction[key]) == tuple:
                             for value in instruction[key]:
                                 buffer.write(f32(value))
-                                if buffer.tell() > string_start:
-                                    string_start = buffer.tell()
                         elif instruction["Data Type"] == "s32":
                             buffer.write(u32(instruction[key]))
-                            if buffer.tell() > string_start:
-                                string_start = buffer.tell()
-                        elif instruction["Data Type"] == "f32":
+                        elif instruction["Data Type"] in ["f32", "vec3f"]: # check vec3f for RHS of vec scalar operations
                             buffer.write(f32(instruction[key]))
-                            if buffer.tell() > string_start:
-                                string_start = buffer.tell()
                         elif instruction["Data Type"] == "bool":
                             buffer.write(u32(1 if instruction[key] else 0))
-                            if buffer.tell() > string_start:
-                                string_start = buffer.tell()
+                        if buffer.tell() > string_start:
+                            string_start = buffer.tell()
                     if instruction[key.strip("Value") + "Source"] == "ParamTblStr":
                         buffer.seek(param_start + instruction[key.strip("Value") + "Index/Value"])
                         buffer.add_string_exb(instruction[key])
