@@ -282,14 +282,15 @@ class EXB:
                         buffer.write(u8(Source[instruction[key]].value))
                     elif "Index/Value" in key:
                         if "Sub Data Type" in instruction:
-                            if instruction["Sub Data Type"] == "vec3f.x":
-                                instruction["RHS Index/Value"] |= 0x8000
-                            elif instruction["Sub Data Type"] == "vec3f.y":
-                                instruction["RHS Index/Value"] |= 0x8400
-                            elif instruction["Sub Data Type"] == "vec3f.z":
-                                instruction["RHS Index/Value"] |= 0x8800
-                            else:
-                                raise ValueError("Unknown vec3f component!")
+                            if "RHS" in key and instruction[key.strip("Index/Value") + "Source"] in ["UserIn", "UserOut"]:
+                                if instruction["Sub Data Type"] == "vec3f.x":
+                                    instruction[key] |= 0x8000
+                                elif instruction["Sub Data Type"] == "vec3f.y":
+                                    instruction[key] |= 0x8400
+                                elif instruction["Sub Data Type"] == "vec3f.z":
+                                    instruction[key] |= 0x8800
+                                else:
+                                    raise ValueError("Unknown vec3f component!")
                         buffer.write(u16(instruction[key]))
                     elif key == "Static Memory Index":
                         buffer.write(u16(instruction[key]))
