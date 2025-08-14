@@ -260,9 +260,9 @@ class EXB:
                         size = 12
                     else:
                         size = 4
-                    if instruction["LHS Source"] == "Scratch32":
+                    if instruction["LHS Source"] == "Scratch64":
                         scratch64_size = max(scratch64_size, instruction["LHS Index/Value"] + size)
-                    if instruction["RHS Source"] == "Scratch32":
+                    if instruction["RHS Source"] == "Scratch64":
                         scratch64_size = max(scratch64_size, instruction["RHS Index/Value"] + size)
             max_64 = max(max_64, scratch64_size)
             buffer.write(u16(scratch64_size))
