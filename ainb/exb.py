@@ -251,7 +251,7 @@ class EXB:
                         scratch32_size = max(scratch32_size, instruction["LHS Index/Value"] + size)
                     if instruction["RHS Source"] == "Scratch32":
                         scratch32_size = max(scratch32_size, instruction["RHS Index/Value"] + size)
-            max_32 = max(max_32, scratch32_size)
+            max_32 += scratch32_size
             buffer.write(u16(scratch32_size))
             scratch64_size = 0
             for instruction in command["Main Expression"]:
@@ -264,7 +264,7 @@ class EXB:
                         scratch64_size = max(scratch64_size, instruction["LHS Index/Value"] + size)
                     if instruction["RHS Source"] == "Scratch64":
                         scratch64_size = max(scratch64_size, instruction["RHS Index/Value"] + size)
-            max_64 = max(max_64, scratch64_size)
+            max_64 += scratch64_size
             buffer.write(u16(scratch64_size))
             buffer.write(u16(Type[command["Output Data Type"]].value))
             buffer.write(u16(Type[command["Input Data Type"]].value))
